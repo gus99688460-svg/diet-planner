@@ -1,0 +1,1272 @@
+<title>식단 설계 · 회원 맞춤 식단 카드</title>
+
+<style>
+  :root{
+    --ink:#0A0A0B;
+    --panel:#141416;
+    --panel-2:#1C1C1F;
+    --line:#2A2A2E;
+    --gold:#C9A227;
+    --gold-hi:#E4C55C;
+    --champagne:#D8C89A;
+    --bronze:#8E6B34;
+    --text:#F2EEE6;
+    --muted:#8B8578;
+    --warn:#D98A3C;
+    --ok:#6E9E72;
+    --r:14px;
+    --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--font);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-text-size-adjust:100%;
+    padding-bottom:110px;
+  }
+
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px}
+
+  /* ---------- 헤더 ---------- */
+  header.top{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(201,162,39,.09),transparent 70%);
+  }
+  .top-in{max-width:560px;margin:0 auto;padding:26px 18px 22px}
+  .eyebrow{
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;margin:0 0 10px;
+  }
+  h1{
+    margin:0;font-size:30px;line-height:1.2;font-weight:800;
+    letter-spacing:-.02em;text-wrap:balance;
+  }
+  .top p{margin:9px 0 0;color:var(--muted);font-size:13.5px}
+
+  /* ---------- 폼 ---------- */
+  section.block{margin-top:26px}
+  .block-head{
+    display:flex;align-items:baseline;gap:9px;
+    padding-bottom:9px;margin-bottom:14px;border-bottom:1px solid var(--line);
+  }
+  .block-head h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .block-head span{font-size:12px;color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .grid.three{grid-template-columns:1fr 1fr 1fr}
+  .full{grid-column:1/-1}
+
+  label.f{display:flex;flex-direction:column;gap:6px}
+  label.f > span{
+    font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;
+  }
+  label.f > span em{font-style:normal;color:var(--bronze);margin-left:4px}
+
+  input,select{
+    width:100%;padding:12px 13px;
+    background:var(--panel);color:var(--text);
+    border:1px solid var(--line);border-radius:11px;
+    font-family:var(--font);font-size:16px;font-weight:600;
+    font-variant-numeric:tabular-nums;
+    appearance:none;-webkit-appearance:none;
+    transition:border-color .15s,background .15s;
+  }
+  input::placeholder{color:#55524B;font-weight:500}
+  input:focus,select:focus{
+    outline:none;border-color:var(--gold);background:var(--panel-2);
+    box-shadow:0 0 0 3px rgba(201,162,39,.16);
+  }
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+
+  /* 세그먼트 */
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg input{position:absolute;opacity:0;pointer-events:none;width:0}
+  .seg label{
+    flex:1 1 auto;min-width:64px;text-align:center;
+    padding:10px 8px;border:1px solid var(--line);border-radius:11px;
+    background:var(--panel);font-size:13px;font-weight:600;color:var(--muted);
+    cursor:pointer;transition:.15s;
+  }
+  .seg input:checked + label{
+    border-color:var(--gold);color:var(--ink);
+    background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+  }
+  .seg input:focus-visible + label{box-shadow:0 0 0 3px rgba(201,162,39,.3)}
+  .seg.mode label{flex:1 1 0;padding:14px 8px;font-size:15px;font-weight:800;letter-spacing:-.01em}
+
+  .hint{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+
+  /* ---------- CTA ---------- */
+  .cta-bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(10,10,11,0) 0%,rgba(10,10,11,.92) 34%,var(--ink) 70%);
+  }
+  .cta-in{max-width:560px;margin:0 auto;display:flex;gap:10px}
+  button{
+    font-family:var(--font);font-size:16px;font-weight:800;
+    border-radius:13px;border:1px solid transparent;cursor:pointer;
+    padding:15px 18px;transition:.15s;letter-spacing:-.01em;
+  }
+  .btn-gold{
+    flex:1;background:linear-gradient(180deg,var(--gold-hi),var(--gold));
+    color:#1A1508;box-shadow:0 6px 22px rgba(201,162,39,.22);
+  }
+  .btn-gold:active{transform:translateY(1px)}
+  .btn-ghost{
+    background:var(--panel);color:var(--text);border-color:var(--line);
+  }
+  button:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+
+  /* ---------- 결과 ---------- */
+  #result{display:none;margin-top:34px}
+  #result.on{display:block;animation:rise .45s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .rule{
+    display:flex;align-items:center;gap:12px;margin:0 0 18px;
+    font-size:11px;letter-spacing:.24em;color:var(--gold);font-weight:700;
+  }
+  .rule::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--r);padding:18px;margin-bottom:12px;
+  }
+
+  .kcal{text-align:center;padding:24px 18px}
+  .kcal .lbl{font-size:11.5px;letter-spacing:.2em;color:var(--muted);font-weight:700}
+  .kcal .num{
+    font-size:58px;font-weight:800;line-height:1;letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;color:var(--gold-hi);margin:8px 0 4px;
+  }
+  .kcal .num small{font-size:19px;font-weight:700;color:var(--muted);letter-spacing:0;margin-left:4px}
+  .kcal .sub{font-size:13px;color:var(--muted)}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:var(--r);overflow:hidden;border:1px solid var(--line);margin-bottom:12px}
+  .stats div{background:var(--panel);padding:14px 10px;text-align:center}
+  .stats .k{font-size:10.5px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+  .stats .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:5px;letter-spacing:-.02em}
+  .stats .d{font-size:11px;margin-top:2px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .up{color:var(--ok)} .down{color:var(--gold)}
+
+  /* 매크로 */
+  .macro-bar{display:flex;height:11px;border-radius:6px;overflow:hidden;margin-bottom:14px;gap:2px}
+  .macro-bar i{display:block}
+  .m-p{background:var(--gold)} .m-c{background:var(--champagne)} .m-f{background:var(--bronze)}
+
+  .macro-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .macro-list div{text-align:center}
+  .macro-list .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:1px}
+  .macro-list .k{font-size:12px;color:var(--muted);font-weight:600}
+  .macro-list .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:3px}
+  .macro-list .v small{font-size:12px;color:var(--muted);font-weight:700;margin-left:2px}
+  .macro-list .p{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* 끼니 */
+  .meal{border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden;background:var(--panel)}
+  .meal-h{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 16px;background:var(--panel-2);border-bottom:1px solid var(--line);
+  }
+  .meal-h .name{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+  .meal-h .name b{color:var(--gold);font-weight:800;margin-right:7px}
+  .meal-h .kc{font-size:13px;font-weight:700;color:var(--gold-hi);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .meal-b{padding:6px 16px 13px}
+  .item{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed #232327;font-size:14px}
+  .item:last-child{border-bottom:0}
+  .item .n{color:var(--text);font-weight:600}
+  .item .n em{font-style:normal;display:block;font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+  .item .g{font-weight:800;font-variant-numeric:tabular-nums;color:var(--champagne);white-space:nowrap}
+  .meal-m{display:flex;gap:12px;padding:10px 16px;background:#111113;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meal-m b{color:var(--text);font-weight:700}
+
+  /* 경고 */
+  .notice{
+    display:flex;gap:11px;padding:14px 16px;border-radius:var(--r);
+    background:rgba(217,138,60,.09);border:1px solid rgba(217,138,60,.32);
+    font-size:13px;line-height:1.55;margin-bottom:12px;
+  }
+  .notice .ic{color:var(--warn);font-weight:800;flex:0 0 auto}
+  .notice b{color:var(--warn)}
+
+  /* 교환표 */
+  .swap{font-size:13px}
+  .swap-row{padding:11px 0;border-bottom:1px solid var(--line)}
+  .swap-row:last-child{border-bottom:0}
+  .swap-row .t{font-size:11.5px;letter-spacing:.1em;color:var(--gold);font-weight:700;margin-bottom:5px}
+  .swap-row .c{color:var(--muted);line-height:1.65}
+  .swap-row .c b{color:var(--text);font-weight:700}
+
+  /* 프리뷰 */
+  #preview{width:100%;border-radius:var(--r);border:1px solid var(--line);display:none;margin-top:12px}
+  #preview.on{display:block}
+  .save-note{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+
+  footer{padding:30px 0 20px;text-align:center;font-size:11.5px;color:#55524B;line-height:1.7}
+
+  .err{border-color:#8C4436 !important;background:rgba(140,68,54,.1) !important}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <p class="eyebrow">MEAL PLAN BUILDER</p>
+    <h1>회원 맞춤 식단 설계</h1>
+    <p>인바디 수치와 목표를 넣으면 칼로리·영양소·끼니별 식단표가 만들어집니다. 이미지 한 장으로 저장해 바로 보내세요.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="block">
+    <div class="block-head"><h2>회원 정보</h2><span>이름 · 나이 · 신장</span></div>
+    <div class="grid">
+      <label class="f full"><span>이름</span>
+        <input id="name" type="text" placeholder="김회원" autocomplete="off"></label>
+      <label class="f"><span>나이</span>
+        <input id="age" type="number" inputmode="numeric" placeholder="32"></label>
+      <label class="f"><span>신장 <em>cm</em></span>
+        <input id="height" type="number" inputmode="decimal" placeholder="172"></label>
+      <div class="f full">
+        <span style="font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">성별</span>
+        <div class="seg">
+          <input type="radio" name="sex" id="sexM" value="M" checked><label for="sexM">남성</label>
+          <input type="radio" name="sex" id="sexF" value="F"><label for="sexF">여성</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>인바디 수치</h2><span>결과지 그대로</span></div>
+    <div class="grid three">
+      <label class="f"><span>체중 <em>kg</em></span>
+        <input id="weight" type="number" inputmode="decimal" placeholder="78.4"></label>
+      <label class="f"><span>골격근량 <em>kg</em></span>
+        <input id="smm" type="number" inputmode="decimal" placeholder="33.2"></label>
+      <label class="f"><span>체지방량 <em>kg</em></span>
+        <input id="fat" type="number" inputmode="decimal" placeholder="18.6"></label>
+    </div>
+    <p class="hint">체지방량 대신 체지방률(%)을 알고 있다면 <b style="color:var(--champagne)">체중 × 체지방률 ÷ 100</b> 으로 입력하세요. 골격근량은 비워도 계산됩니다.</p>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>목표</h2><span>도달 지점과 기간</span></div>
+    <div class="seg mode" style="margin-bottom:10px">
+      <input type="radio" name="mode" id="mCut" value="cut" checked><label for="mCut">다이어트</label>
+      <input type="radio" name="mode" id="mBulk" value="bulk"><label for="mBulk">벌크업</label>
+    </div>
+    <div class="seg" style="margin-bottom:6px">
+      <input type="radio" name="pace" id="pSafe" value="safe" checked><label for="pSafe">안정적</label>
+      <input type="radio" name="pace" id="pHard" value="hard"><label for="pHard">공격적</label>
+      <input type="radio" name="pace" id="pCycle" value="cycle"><label for="pCycle" id="lCycle">싸이클링</label>
+    </div>
+    <p class="hint" id="pace-hint" style="margin-bottom:14px"></p>
+    <div class="grid">
+      <label class="f"><span>목표 체중 <em>kg</em></span>
+        <input id="tWeight" type="number" inputmode="decimal" placeholder="70"></label>
+      <label class="f"><span>목표 체지방률 <em>%</em></span>
+        <input id="tFatPct" type="number" inputmode="decimal" placeholder="15"></label>
+      <label class="f"><span>목표 기간 <em>주</em></span>
+        <input id="weeks" type="number" inputmode="numeric" placeholder="12"></label>
+      <label class="f"><span>하루 식사 횟수</span>
+        <select id="meals">
+          <option value="3">3끼</option>
+          <option value="4" selected>3끼 + 간식 1</option>
+          <option value="5">3끼 + 간식 2</option>
+        </select></label>
+      <div class="f full">
+        <span style="font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">활동량 · 주간 운동 빈도</span>
+        <div class="seg">
+          <input type="radio" name="act" id="a1" value="1.2"><label for="a1">거의 안 함</label>
+          <input type="radio" name="act" id="a2" value="1.375"><label for="a2">주 1~2회</label>
+          <input type="radio" name="act" id="a3" value="1.5" checked><label for="a3">주 3~4회</label>
+          <input type="radio" name="act" id="a4" value="1.65"><label for="a4">주 5~6회</label>
+          <input type="radio" name="act" id="a5" value="1.8"><label for="a5">매일 · 육체노동</label>
+        </div>
+      </div>
+      <label class="f full"><span>담당 트레이너</span>
+        <input id="trainer" type="text" value="조태현 트레이너" autocomplete="off"></label>
+    </div>
+  </section>
+
+  <div id="result">
+    <p class="rule">RESULT</p>
+    <div id="r-notice"></div>
+    <div class="card kcal">
+      <div class="lbl">하루 목표 섭취량</div>
+      <div class="num"><span id="r-kcal">0</span><small>kcal</small></div>
+      <div class="sub" id="r-kcal-sub"></div>
+    </div>
+
+    <div class="stats" id="r-stats"></div>
+
+    <div class="card">
+      <div class="macro-bar" id="r-bar"><i class="m-p"></i><i class="m-c"></i><i class="m-f"></i></div>
+      <div class="macro-list" id="r-macro"></div>
+    </div>
+
+    <div id="r-cycling-wrap" style="display:none">
+      <p class="rule">탄수 사이클링</p>
+      <div class="card swap" id="r-cycling"></div>
+    </div>
+
+    <p class="rule">MEALS</p>
+    <div id="r-meals"></div>
+
+    <p class="rule">SWAP</p>
+    <div class="card swap" id="r-swap"></div>
+
+    <p class="rule">회사 점심 · 외식</p>
+    <div class="card swap" id="r-dining"></div>
+
+    <p class="rule">유산소</p>
+    <div class="card swap" id="r-cardio"></div>
+
+    <p class="rule">CHECK</p>
+    <div class="card swap" id="r-check"></div>
+
+    <p class="rule">SAVE</p>
+    <div class="card" style="padding:16px">
+      <button class="btn-gold" id="btn-img" style="width:100%">이미지로 저장하기</button>
+      <p class="save-note" id="save-note">누르면 회원에게 보낼 카드 이미지(PNG)가 만들어집니다. 아이폰에서 자동 저장이 안 되면 아래 미리보기를 <b style="color:var(--champagne)">길게 눌러</b> 저장하세요.</p>
+      <img id="preview" alt="식단 카드 미리보기">
+    </div>
+  </div>
+
+  <footer>
+    이 식단은 인바디 수치 기반 추정치입니다.<br>질환·복약 중인 회원은 전문의 상담 후 적용하세요.
+  </footer>
+</main>
+
+<div class="cta-bar">
+  <div class="cta-in">
+    <button class="btn-ghost" id="btn-reset" style="flex:0 0 auto">초기화</button>
+    <button class="btn-gold" id="btn-make">식단 만들기</button>
+  </div>
+</div>
+
+<canvas id="cv" style="display:none"></canvas>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var r0 = function(n){ return Math.round(n); };
+  var r1 = function(n){ return Math.round(n*10)/10; };
+  var r5 = function(n){ return Math.round(n/5)*5; };
+
+  /* ===== 식품 데이터 (100g 기준, 생/조리 전 중량) =====
+     unit: 회원이 눈으로 셀 수 있는 단위. per = 1단위의 g수. cap = 한 끼 최대치 */
+  var F = {
+    /* 탄수화물 */
+    bagel   : {n:"베이글",     note:"플레인 · 1개 약 90g",     kcal:270, p:10.0, c:53.0, f:1.5, unit:"개", per:90,  cap:180},
+    rice    : {n:"쌀밥",       note:"지은 밥 기준",            kcal:145, p:2.5,  c:32.0, f:0.3, unit:"공기", per:210, cap:420},
+    oat     : {n:"오트밀",     note:"건조 중량 · 물이나 우유에",kcal:380, p:13.0, c:67.0, f:7.0, cap:120},
+    sweet   : {n:"고구마",     note:"찐 것",                   kcal:128, p:1.3,  c:31.0, f:0.2, unit:"개", per:150, cap:300},
+    potato  : {n:"감자",       note:"찐 것",                   kcal:80,  p:2.0,  c:18.5, f:0.1, unit:"개", per:130, cap:260},
+
+    banana  : {n:"바나나",     note:"",                        kcal:93,  p:1.1,  c:23.0, f:0.3, unit:"개", per:110, cap:250},
+
+    /* 단백질 */
+    protein : {n:"프로틴",     note:"1스쿱 30g · 단백질 25g · 물에 타서", kcal:400, p:83.0, c:8.0, f:3.5, unit:"스쿱", per:30, cap:60},
+    chicken : {n:"닭가슴살",   note:"생 중량 · 구이 또는 삶기", kcal:106, p:23.4, c:0,    f:1.2},
+    yogurt2 : {n:"그릭요거트", note:"무가당 · 편의점 컵 그대로",kcal:60,  p:10.0, c:4.0,  f:0.5},
+    porkT   : {n:"돼지 안심",  note:"생 중량",                 kcal:120, p:22.0, c:0,    f:3.0},
+    porkH   : {n:"돼지 뒷다리살",note:"생 중량 · 기름 제거",   kcal:130, p:20.5, c:0,    f:4.5},
+    beefR   : {n:"소 우둔살",  note:"생 중량 · 홍두깨살 대체 가능",kcal:130,p:21.0,c:0,  f:4.5},
+    tilapia : {n:"틸라피아",   note:"생 중량 · 흰살생선",      kcal:96,  p:20.1, c:0,    f:1.7},
+
+    /* 단백질 + 지방 겸용 */
+    beefB   : {n:"소 부채살",  note:"생 중량 · 지방까지 채워짐", kcal:210, p:19.0, c:0,   f:14.5},
+    mackerel: {n:"고등어",     note:"생 중량 · 오메가3 지방원", kcal:190, p:20.0, c:0,    f:12.0},
+
+    /* 지방 */
+    egg     : {n:"계란",       note:"삶아두거나 편의점 구운계란",kcal:144, p:12.4, c:0.8,  f:9.6,  unit:"개", per:50},
+    oil     : {n:"올리브유",   note:"조리용",                  kcal:884, p:0,    c:0,    f:100.0,unit:"큰술", per:15},
+    almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2},
+    avocado : {n:"아보카도",   note:"",                        kcal:160, p:2.0,  c:9.0,  f:15.0, unit:"개", per:140}
+  };
+
+  /* 끼니 구성 템플릿
+     p  = 주 단백질원 / p2 = cap에 걸렸을 때 채우는 보조 / c = 탄수원 / f = 남은 지방을 채울 지방원
+     fix = 개수로 고정해 넣는 재료(노른자 등) */
+  var TPL = {
+    /* 아침은 조리 없이 · 간식은 회사 책상에서 바로 먹을 수 있는 것으로 */
+    cut: {
+      "아침":     {p:"protein", p2:"yogurt2", c:"oat",   c2:"banana", f:"almond",  fix:[{k:"egg", g:100}]},
+      "점심":     {p:"chicken",               c:"rice",  c2:"sweet",  f:"oil"},
+      "운동 직후":{p:"protein",               c:"banana",c2:"rice"},
+      "저녁":     {p:"tilapia",               c:"sweet", c2:"rice",   f:"avocado"},
+      "간식":     {p:"yogurt2",               c:"banana",c2:"sweet",  f:"almond"}
+    },
+    bulk: {
+      "아침":     {p:"protein", p2:"yogurt2", c:"bagel", c2:"oat",    f:"oil",     fix:[{k:"egg", g:150}]},
+      "점심":     {p:"beefR",                 c:"rice",  c2:"sweet",  f:"oil"},
+      "운동 직후":{p:"protein",               c:"banana",c2:"rice"},
+      "저녁":     {p:"mackerel",              c:"rice",  c2:"potato", f:"avocado"},
+      "간식":     {p:"yogurt2",               c:"bagel", c2:"banana", f:"almond"}
+    }
+  };
+
+  /* 카드에 싣는 교환 목록 — 회원이 같은 칸 안에서 자유롭게 바꿔 먹는 기준 */
+  var SWAP = [
+    ["프로틴 1스쿱 = 단백질 25g",
+     "닭가슴살 110g · 계란 4개 · 흰자 7개분 · 그릭요거트 250g과 같습니다. 고기가 부담되는 끼니는 프로틴으로 바꾸세요"],
+    ["탄수화물 30g 교환", "쌀밥 95g · 베이글 55g · 오트밀 45g · 고구마 100g · 감자 160g · 바나나 1.2개"],
+    ["단백질 20g 교환",   "닭가슴살 85g · 프로틴 0.8스쿱 · 계란 3개 · 돼지 안심 90g · 소 우둔살 95g · 틸라피아 100g"],
+    ["지방 10g 교환",     "계란 1개 · 올리브유 0.7큰술 · 아몬드 17알 · 아보카도 70g · 고등어 85g"],
+    ["지방까지 채워지는 고기", "부채살·고등어를 쓰는 끼니는 기름을 따로 넣지 않습니다"],
+    ["회사에서 먹는 간식", "프로틴 쉐이크 · 그릭요거트 · 바나나 · 아몬드 · 시판 닭가슴살 · 편의점 구운계란"]
+  ];
+
+  /* 그램 → 회원이 셀 수 있는 단위 (0.5 단위 반올림) */
+  function amount(f,g){
+    if(!g) return "자유롭게";
+    var t = g + "g";
+    if(!f.unit) return t;
+    /* 알·조각처럼 쪼갤 수 없는 단위는 정수로, 나머지는 0.5 단위로 */
+    if(g/f.per < 0.4) return t;              // 1/2보다 확실히 작으면 그램만
+    var n = f.per < 2 ? Math.round(g/f.per) : Math.round(g/f.per*2)/2;
+    if(n < 0.5) return t;
+    if(Math.abs(g - n*f.per)/g > 0.15) return t;  // 개수로 바꿨을 때 오차가 크면 그램만
+
+    var label = (n === 0.5) ? "1/2" : (n % 1 === 0 ? n : n);
+    return t + " · " + label + f.unit;
+  }
+
+  var MEALSET = {
+    3:[["아침",.32],["점심",.34],["저녁",.34]],
+    4:[["아침",.28],["점심",.30],["운동 직후",.12],["저녁",.30]],
+    5:[["아침",.25],["점심",.27],["운동 직후",.11],["저녁",.27],["간식",.10]]
+  };
+
+  var state = null;
+
+  /* ===== 계산 ===== */
+  function compute(){
+    var v = {
+      name  : ($("name").value || "").trim(),
+      age   : parseFloat($("age").value),
+      sex   : document.querySelector('input[name=sex]:checked').value,
+      height: parseFloat($("height").value),
+      weight: parseFloat($("weight").value),
+      smm   : parseFloat($("smm").value),
+      fat   : parseFloat($("fat").value),
+      tW    : parseFloat($("tWeight").value),
+      tFp   : parseFloat($("tFatPct").value),
+      weeks : parseFloat($("weeks").value),
+      act   : parseFloat(document.querySelector('input[name=act]:checked').value),
+      mode  : document.querySelector('input[name=mode]:checked').value,
+      pace  : document.querySelector('input[name=pace]:checked').value,
+      meals : parseInt($("meals").value,10),
+      trainer:($("trainer").value||"").trim()
+    };
+
+    var bad = [];
+    if(!v.name) bad.push("name");
+    if(!(v.age>0&&v.age<100)) bad.push("age");
+    if(!(v.height>100&&v.height<230)) bad.push("height");
+    if(!(v.weight>25&&v.weight<250)) bad.push("weight");
+    if(!(v.fat>0&&v.fat<v.weight)) bad.push("fat");
+    if(!(v.weeks>0&&v.weeks<=52)) bad.push("weeks");
+    if(bad.length) return {error:bad};
+
+    if(!(v.tW>25&&v.tW<250)) v.tW = v.weight;
+
+    var notes = [];
+
+    var fatPct = v.fat / v.weight * 100;
+    var lbm    = v.weight - v.fat;
+
+    /* 기초대사량 — Katch-McArdle (제지방 기반, 인바디 있을 때 가장 정확) */
+    var bmr  = 370 + 21.6 * lbm;
+    var tdee = bmr * v.act;
+
+    /* 목표 체지방량 */
+    var tFat;
+    if(v.tFp>0 && v.tFp<60){ tFat = v.tW * v.tFp/100; }
+    else { tFat = Math.max(0, v.fat - (v.weight - v.tW)); }
+
+    var fatLoss = v.fat - tFat;                 // 감량해야 할 지방(kg)
+    var days    = v.weeks * 7;
+    var dir     = v.mode;                       // 모드는 트레이너가 직접 고른다
+
+    /* 고른 모드와 입력한 목표 체중이 어긋나면 짚어준다 */
+    if(dir==="cut" && v.tW > v.weight + 0.5){
+      notes.push({t:"목표 체중을 확인하세요",
+        d:"다이어트를 선택했는데 목표 체중이 현재보다 높습니다. 아래 식단은 <b>체지방 감량</b> 기준으로 잡았습니다."});
+    }
+    if(dir==="bulk" && v.tW < v.weight - 0.5){
+      notes.push({t:"목표 체중을 확인하세요",
+        d:"벌크업을 선택했는데 목표 체중이 현재보다 낮습니다. 아래 식단은 <b>근육 증량</b> 기준으로 잡았습니다."});
+    }
+
+    var hard = v.pace === "hard";
+    var capped = false, needWeeks = 0;
+
+    var deficit = 0;
+    if(dir==="cut"){
+      if(fatLoss <= 0.3) fatLoss = Math.max(0.5, v.weight * 0.05); // 목표가 사실상 없으면 체중 5% 기준
+      deficit = fatLoss * 7700 / days;
+      /* 공격적은 더 밀어붙이되, 넘으면 안 되는 선은 지킨다 */
+      var capPct = tdee * (hard ? 0.33 : 0.25);                      // 하루 적자 상한
+      var floor  = Math.max(bmr * (hard ? 0.95 : 1.05),
+                            v.sex==="M" ? (hard?1400:1500) : (hard?1150:1200)); // 섭취 하한
+      var cap    = Math.min(capPct, tdee - floor);
+      if(deficit > cap){
+        capped = true;
+        needWeeks = Math.ceil(fatLoss * 7700 / cap / 7);
+        deficit = cap;
+      }
+      if(hard){
+        notes.push({t:"공격적 감량입니다",
+          d:"적자를 크게 잡은 만큼 근손실·정체가 오기 쉽습니다. 단백질을 더 올려뒀으니 <b>주 3회 이상 근력운동</b>을 반드시 병행하고, 4주 이상 연속으로 끌고 가지 마세요."});
+      }
+    } else {
+      var gain = Math.max(0.5, v.tW - v.weight);
+      var surplus = gain * 5500 / days;                    // 근육+지방 혼합 증량 기준
+      var lean = v.weight * (hard ? 0.007 : 0.004) * 5500 / 7;  // 주당 체중 0.4%(린벌크) ~ 0.7%(공격적)
+      if(surplus > lean){
+        capped = true;
+        needWeeks = Math.ceil(gain * 5500 / lean / 7);
+        surplus = lean;
+      }
+      deficit = -Math.max(200, Math.min(hard ? 700 : 500, surplus));
+      notes.push({t: hard ? "공격적 증량입니다" : "증량 구간입니다",
+        d: hard
+          ? "잉여를 크게 잡은 만큼 <b>지방도 같이 붙습니다.</b> 눈바디가 흐려지면 바로 안정적으로 내리세요. 근력운동 강도를 올리는 게 전제입니다."
+          : "이 칼로리가 근육으로 가려면 근력운동 강도가 같이 올라가야 합니다. 주 3회 이상 중량을 올리는 훈련을 병행하세요."});
+    }
+
+    var kcal = r5(tdee - deficit);
+
+    /* 요청한 기간이 끝났을 때 실제로 도달하는 지점 — 기간을 늘리라고만 하지 않는다 */
+    var kcalPerKg = dir==="cut" ? 7700 : 5500;
+    var perWeekKg = deficit*7/kcalPerKg;
+    var perWeekPct = Math.abs(perWeekKg) / v.weight * 100;
+    var moveKg = perWeekKg * v.weeks;                       // cut이면 +, bulk이면 -
+    var reach = {
+      w  : Math.round((v.weight - moveKg)*10)/10,
+      fat: Math.max(1, v.fat - (dir==="cut" ? moveKg : moveKg*0.4))
+    };
+    reach.pct = reach.fat / reach.w * 100;
+
+    if(capped){
+      notes.unshift({t:v.weeks+"주 뒤 도달 지점",
+        d:"입력하신 목표는 "+v.weeks+"주 안에 닿지 않습니다. 이 식단을 지키면 <b>"+v.weeks+"주 뒤 "
+          + reach.w+"kg · 체지방률 "+r1(reach.pct)+"%</b>까지 갑니다. 목표까지 그대로 가려면 <b>약 "+needWeeks+"주</b>가 필요합니다."
+          + (hard ? "" : " 더 당기려면 <b>공격적</b>으로 바꿔보세요.")});
+    } else {
+      notes.unshift({t:v.weeks+"주 뒤 도달 지점",
+        d:"이 식단을 지키면 <b>"+v.weeks+"주 뒤 "+reach.w+"kg · 체지방률 "+r1(reach.pct)+"%</b>에 닿습니다. 목표 안에 들어옵니다."});
+    }
+
+    if(dir==="cut" && perWeekPct > 1.05){
+      notes.push({t:"감량 속도 주의",
+        d:"주당 "+r1(perWeekKg)+"kg(체중의 "+r1(perWeekPct)+"%) 속도입니다. 2주 연속 이보다 빨리 빠지면 탄수화물을 하루 20~30g 늘려주세요."});
+    }
+    if(dir==="cut" && fatPct < (v.sex==="M"?10:18)){
+      notes.push({t:"이미 저체지방 구간",
+        d:"현재 체지방률 "+r1(fatPct)+"%입니다. 더 줄이기보다 근육량 유지·증가에 초점을 두는 편이 결과가 좋습니다."});
+    }
+
+    /* 영양소 */
+    /* 공격적 감량일수록 단백질을 올려 근손실을 막는다 */
+    var pG = Math.round(lbm * (dir==="cut" ? (hard ? 2.6 : 2.3) : 2.2));
+    var fG = Math.round(v.weight * (dir==="cut" ? 0.85 : 1.1));
+    if(fG*9 < kcal*0.2) fG = Math.round(kcal*0.2/9);
+    var cG = Math.round((kcal - pG*4 - fG*9)/4);
+    if(cG < 80){
+      cG = 80;
+      fG = Math.max(Math.round(v.weight*0.6), Math.round((kcal - pG*4 - cG*4)/9));
+    }
+    kcal = r5(pG*4 + cG*4 + fG*9);
+
+    /* 탄수 사이클링 — 주간 총량은 그대로 두고 요일에만 몰아준다 (저탄 5일 + 고탄 2일)
+       5·cLow + 2·cHigh = 7·cG,  cHigh ≈ 2.2·cLow 가 되도록 잡는다 */
+    var cyc = null, cUse = cG, fUse = fG;
+    if(v.pace==="cycle" && dir==="cut"){
+      cyc = {
+        cLow : Math.round(cG*0.745), cHigh: Math.round(cG*1.64),
+        fLow : Math.round(fG*1.15),  fHigh: Math.round(fG*0.60)
+      };
+      cyc.kLow  = r5(pG*4 + cyc.cLow*4  + cyc.fLow*9);
+      cyc.kHigh = r5(pG*4 + cyc.cHigh*4 + cyc.fHigh*9);
+      cUse = cyc.cLow; fUse = cyc.fLow;   // 끼니표는 저탄일 기준으로 짠다
+      kcal = cyc.kLow;
+    }
+
+    /* 끼니 배분 */
+    var set = MEALSET[v.meals] || MEALSET[4];
+
+    /* 운동 직후는 지방을 넣지 않는다 — 그 몫은 나머지 끼니가 나눠 갖는다 */
+    var noFatShare = set.reduce(function(a,m){
+      return a + (TPL[v.mode][m[0]].f ? 0 : m[1]);
+    }, 0);
+    var fatScale = noFatShare < 1 ? 1/(1-noFatShare) : 1;
+
+    var meals = set.map(function(m){
+      var ratio = m[1];
+      var t0 = TPL[v.mode][m[0]];
+      var mp = pG*ratio, mc = cUse*ratio, mf = t0.f ? fUse*ratio*fatScale : 0;
+      var t = t0;
+      var pf = F[t.p], cf = F[t.c], ff = t.f ? F[t.f] : null;
+      var items = [];
+
+      /* 노른자처럼 개수로 고정해 넣는 재료를 먼저 빼둔다 */
+      var fixed = (t.fix||[]).map(function(x){ return {f:F[x.k], g:x.g, key:x.k}; });
+      fixed.forEach(function(it){
+        mp -= it.f.p*it.g/100;
+        mc -= it.f.c*it.g/100;
+        mf -= it.f.f*it.g/100;
+      });
+      mp = Math.max(mp, 0); mc = Math.max(mc, 0); mf = Math.max(mf, 0);
+
+      /* 탄수 — 한 끼에 몰아 담기 힘든 양이면 두 번째 탄수원으로 나눈다 */
+      var cAmt = mc / (cf.c/100);
+      var cAmt2 = 0, cf2 = t.c2 ? F[t.c2] : null;
+      if(cf.cap && cAmt > cf.cap && cf2){
+        cAmt2 = (mc - cf.cap*(cf.c/100)) / (cf2.c/100);
+        cAmt = cf.cap;
+      }
+
+      /* 탄수원(밥·오트밀)에도 단백질이 있으므로 먼저 빼고 단백질원 양을 잡는다 */
+      var cP = cAmt*(cf.p/100) + (cAmt2 ? cAmt2*(cf2.p/100) : 0);
+      var mpLeft = Math.max(mp*0.4, mp - cP);
+
+      /* 단백질 — 지방 많은 재료(계란·두부)는 상한까지만 쓰고 나머지는 저지방 보조로 */
+      var pAmt = mpLeft / (pf.p/100);
+      var pAmt2 = 0;
+      if(pf.cap && pAmt > pf.cap && t.p2){
+        pAmt2 = (mpLeft - pf.cap*(pf.p/100)) / (F[t.p2].p/100);
+        pAmt = pf.cap;
+      }
+
+      var usedF = pAmt*(pf.f/100) + cAmt*(cf.f/100)
+                + (pAmt2 ? pAmt2*(F[t.p2].f/100) : 0)
+                + (cAmt2 ? cAmt2*(cf2.f/100) : 0);
+      var fAmt = ff ? Math.max(0, mf - usedF) / (ff.f/100) : 0;
+
+      /* 프로틴은 스쿱으로 뜨는 재료라 반 스쿱(15g) 단위로 맞춘다 */
+      items.push({f:pf, key:t.p,
+        g: t.p==="protein" ? Math.max(15, Math.round(pAmt/15)*15) : Math.round(pAmt/5)*5});
+      if(pAmt2 >= 20) items.push({f:F[t.p2], g:Math.round(pAmt2/5)*5, key:t.p2});
+      fixed.forEach(function(it){ items.push(it); });
+      items.push({f:cf, g:Math.round(cAmt/5)*5, key:t.c});
+      if(cAmt2 >= 20) items.push({f:cf2, g:Math.round(cAmt2/5)*5, key:t.c2});
+      if(fAmt >= 6) items.push({f:ff, g:Math.round(fAmt), key:t.f});
+      /* 아침·간식은 손질 없이 · 운동 직후는 흡수가 빠른 것만 남긴다 */
+      if(m[0] !== "운동 직후"){
+        var easy = m[0]==="간식" || m[0]==="아침";
+        items.push({f:{n:"채소", note: easy ? "방울토마토·오이·파프리카 등 씻어만 두기"
+                                            : "쌈채소·브로콜리·오이 등 자유롭게"}, g:0, key:"veg"});
+      }
+
+      var sum = {k:0,p:0,c:0,f:0};
+      items.forEach(function(it){
+        if(!it.g) return;
+        sum.k += it.f.kcal*it.g/100;
+        sum.p += it.f.p*it.g/100;
+        sum.c += it.f.c*it.g/100;
+        sum.f += it.f.f*it.g/100;
+      });
+
+      return {name:m[0], items:items, sum:{k:r0(sum.k),p:r0(sum.p),c:r0(sum.c),f:r0(sum.f)}};
+    });
+
+    /* 2주 뒤 재점검 기준 — 이 식단을 1~2주 유지한 다음 수치를 보고 조정한다 */
+    var wk2 = Math.round((v.weight - perWeekKg*2)*10)/10;
+    var adj = Math.max(15, Math.min(35, r5(cG*0.15)));
+    var check = {
+      w2 : wk2,
+      adj: adj,
+      rules: dir==="cut"
+        ? [["예상대로 빠졌으면", "그대로 2주 더 유지합니다"],
+           ["덜 빠졌으면", "탄수화물을 하루 "+adj+"g 줄이거나 유산소를 주 2회 추가합니다"],
+           ["더 빠졌으면", "탄수화물을 하루 "+adj+"g 늘립니다 · 근손실 신호일 수 있습니다"]]
+        : [["예상대로 늘었으면", "그대로 2주 더 유지합니다"],
+           ["안 늘었으면", "탄수화물을 하루 "+adj+"g 늘립니다"],
+           ["너무 빨리 늘면", "탄수화물을 하루 "+adj+"g 줄입니다 · 지방부터 붙고 있다는 뜻입니다"]]
+    };
+
+    /* 탄수 사이클링 운영표 */
+    var cycling = null;
+    if(cyc){
+      cycling = [
+        ["일주일 배치",
+         "저탄일 5일 + 고탄일 2일 · 고탄일은 하체·등처럼 가장 힘든 운동을 하는 날에 붙이세요. 주간 총 섭취량은 매일 같은 양을 먹는 것과 같습니다"],
+        ["저탄일 · 주 5일",
+         cyc.kLow.toLocaleString()+"kcal — 단백질 "+pG+"g · 탄수 "+cyc.cLow+"g · 지방 "+cyc.fLow+"g"],
+        ["고탄일 · 주 2일",
+         cyc.kHigh.toLocaleString()+"kcal — 단백질 "+pG+"g · 탄수 "+cyc.cHigh+"g · 지방 "+cyc.fHigh+"g"],
+        ["고탄일에 바꾸는 것",
+         "탄수원(밥·고구마·베이글)만 약 1.6배로 늘리고 견과·기름은 절반으로 줄이세요 · 단백질은 그대로 · 치팅데이가 아니라 탄수만 올리는 날입니다"],
+        ["짧은 주기를 원하면",
+         "3일 저탄 + 1일 중탄(고탄일의 70% 수준)으로 4일마다 반복해도 됩니다 · 회원이 주말에 약속이 잦으면 7일 주기가 지키기 쉽습니다"],
+        ["왜 이렇게 하나",
+         "주 5일 제한 + 2일 유지 방식이 매일 같은 적자보다 제지방(근육) 손실이 적었다는 저항운동 훈련자 대상 무작위대조시험(Campbell 등, 2020)과, 간헐적 에너지 제한이 대사 적응을 줄였다는 연구(MATADOR, Byrne 등 2018)에 근거합니다"]
+      ];
+    }
+
+    /* 유산소 — 계단(스텝밀) 속도 4~5 = 약 8 METs 기준으로 체중에 맞춰 계산 */
+    var kcalMin = 8 * 3.5 * v.weight / 200;
+    var cMin  = dir==="cut" ? (hard ? 40 : 30) : 20;
+    var cFreq = dir==="cut" ? (hard ? 5 : 4) : 2;
+    var cBurn = r5(kcalMin * cMin);
+    var cardio = dir==="cut" ? [
+      ["계단 속도 4~5 · "+cMin+"분 · 주 "+cFreq+"회",
+       "회당 약 "+cBurn.toLocaleString()+"kcal, 주 "+(cBurn*cFreq).toLocaleString()+"kcal를 태웁니다"],
+      ["언제 하나",
+       "근력운동을 끝낸 뒤에 하세요. 유산소를 먼저 하면 그날 드는 중량이 떨어집니다. 아침 공복도 좋습니다"],
+      ["강도 기준",
+       "대화는 되지만 노래는 안 되는 정도 · 손잡이에 체중을 싣지 말고 다리로만 오르기"],
+      ["정체가 오면",
+       "먼저 시간을 5분씩 늘려 최대 45분까지 · 그보다 더 늘리기보다 식단을 다시 잡는 편이 낫습니다"]
+    ] : [
+      ["계단 속도 4~5 · "+cMin+"분 · 주 "+cFreq+"회",
+       "회당 약 "+cBurn.toLocaleString()+"kcal · 살을 빼려는 게 아니라 심폐와 식욕을 지키는 용도입니다"],
+      ["언제 하나",
+       "근력운동을 끝낸 뒤에 하세요. 유산소를 먼저 하면 그날 드는 중량이 떨어집니다"],
+      ["이건 주의",
+       "유산소를 늘릴수록 증량이 느려집니다 · 배에 지방이 붙는 게 보일 때만 30분까지 올리세요"]
+    ];
+
+    /* 회사 점심 · 외식 가이드 — 점심 목표에서 역산해 부족분을 채우는 법까지 */
+    var lunch = meals.filter(function(m){ return m.name==="점심"; })[0];
+    var lunchP = lunch ? lunch.sum.p : Math.round(pG*0.3);
+    var outP   = dir==="cut" ? 25 : 30;              // 일반 외식 한 끼의 단백질 대략치
+    var shortP = Math.max(0, lunchP - outP);
+    var addChicken = Math.round(shortP/23.4*100/5)*5;
+    var addScoop   = Math.round(shortP/25*10)/10;
+
+    var dining = dir==="cut" ? [
+      ["고르면 좋은 메뉴",
+       "설렁탕·곰탕(고기 추가) · 백반정식(구이 반찬) · 쌈밥 · 샤브샤브 · 닭갈비 · 회덮밥 · 순대국(살코기로)"],
+      ["피해야 할 메뉴",
+       "볶음밥 · 짜장·짬뽕 · 돈까스·튀김 · 부대찌개 · 마라탕 · 크림파스타 · 김밥+라면 세트"],
+      ["양 조절",
+       "밥은 나오자마자 3분의 1을 덜어두기 · 국물은 세 숟갈까지 · 튀김·전은 한 점만 · 반찬의 고기와 채소부터 먹고 밥은 마지막에"],
+      ["부족한 단백질 채우기",
+       "일반식 점심은 단백질이 "+outP+"g 안팎입니다. 이 회원의 점심 목표는 "+lunchP+"g이라 "
+        + (shortP>0 ? "<b>"+shortP+"g이 빕니다.</b> 오후에 프로틴 "+addScoop+"스쿱(또는 닭가슴살 "+addChicken+"g)으로 채우세요."
+                    : "<b>일반식으로도 채워집니다.</b> 고기 반찬을 한 번 더 받으세요.")],
+      ["술자리",
+       "소주 한 병이 밥 두 공기(약 400kcal)입니다 · 마시는 날은 그날 밥과 기름을 절반으로 · 안주는 구이·회·수육으로"]
+    ] : [
+      ["고르면 좋은 메뉴",
+       "제육·불고기 백반 · 국밥(밥 추가) · 초밥 · 덮밥류 · 닭갈비+볶음밥 · 스테이크 정식"],
+      ["양 조절",
+       "밥 한 공기는 기본으로 다 먹기 · 반찬은 고기·계란부터 · 국물보다 건더기 · 부족하면 공기밥 추가"],
+      ["부족한 단백질 채우기",
+       "일반식 점심은 단백질이 "+outP+"g 안팎입니다. 이 회원의 점심 목표는 "+lunchP+"g이라 "
+        + (shortP>0 ? "<b>"+shortP+"g이 빕니다.</b> 오후에 프로틴 "+addScoop+"스쿱(또는 닭가슴살 "+addChicken+"g)으로 채우세요."
+                    : "<b>일반식으로도 채워집니다.</b>")],
+      ["이건 주의",
+       "튀김·크림으로 칼로리를 채우면 지방만 붙습니다 · 늘릴 땐 밥과 고기로 · 술은 증량에 도움이 되지 않습니다"]
+    ];
+
+    return {
+      v:v, notes:notes, dir:dir, check:check, dining:dining, reach:reach, cardio:cardio,
+      cyc:cyc, cycling:cycling,
+      fatPct:fatPct, lbm:lbm, bmr:bmr, tdee:tdee,
+      tFat:tFat, tFatPct:tFat/v.tW*100, fatLoss:fatLoss,
+      kcal:kcal, p:pG, c:cUse, f:fUse,   /* 사이클링이면 저탄일 기준 */
+      perWeekKg:perWeekKg,
+      water:Math.round(v.weight*33/100)/10,
+      meals:meals
+    };
+  }
+
+  /* ===== 화면 렌더 ===== */
+  function render(s){
+    var pk=s.p*4, ck=s.c*4, fk=s.f*9, tot=pk+ck+fk;
+
+    $("r-kcal").textContent = s.kcal.toLocaleString();
+    var dirTxt = s.dir==="cut" ? "체지방 감량 구간" : (s.dir==="bulk" ? "근육 증량 구간" : "체중 유지 · 체형 개선 구간");
+    $("r-kcal-sub").innerHTML = s.cyc
+      ? "저탄일 기준 · 고탄일은 <b style='color:var(--champagne)'>"+s.cyc.kHigh.toLocaleString()+"kcal</b> · 유지칼로리 "+r0(s.tdee).toLocaleString()+"kcal"
+      : dirTxt + " · 유지칼로리 " + r0(s.tdee).toLocaleString() + "kcal 대비 "
+        + (s.kcal>=r0(s.tdee) ? "+" : "") + (s.kcal - r0(s.tdee)).toLocaleString() + "kcal";
+
+    $("r-cycling-wrap").style.display = s.cycling ? "block" : "none";
+    if(s.cycling) $("r-cycling").innerHTML = s.cycling.map(function(r){ return swap(r[0], r[1]); }).join("");
+
+    $("r-notice").innerHTML = s.notes.map(function(n){
+      return '<div class="notice"><span class="ic">!</span><span><b>'+n.t+'</b><br>'+n.d+'</span></div>';
+    }).join("");
+
+    var wDiff = s.v.tW - s.v.weight;
+    $("r-stats").innerHTML =
+      stat("체중", r1(s.v.weight)+"kg", (wDiff===0?"목표 동일":"목표 "+r1(s.v.tW)+"kg"), wDiff<0?"down":(wDiff>0?"up":"")) +
+      stat("체지방률", r1(s.fatPct)+"%", "목표 "+r1(s.tFatPct)+"%", s.tFatPct<s.fatPct?"down":"") +
+      stat("제지방량", r1(s.lbm)+"kg", "기초대사 "+r0(s.bmr).toLocaleString(), "");
+
+    var bar = $("r-bar").children;
+    bar[0].style.flex = pk; bar[1].style.flex = ck; bar[2].style.flex = fk;
+
+    $("r-macro").innerHTML =
+      mac("m-p","단백질",s.p,pk/tot*100) +
+      mac("m-c","탄수화물",s.c,ck/tot*100) +
+      mac("m-f","지방",s.f,fk/tot*100);
+
+    $("r-meals").innerHTML = s.meals.map(function(m,i){
+      return '<div class="meal">'
+        + '<div class="meal-h"><div class="name"><b>'+(i+1)+'</b>'+m.name+'</div>'
+        + '<div class="kc">'+m.sum.k.toLocaleString()+' kcal</div></div>'
+        + '<div class="meal-b">' + m.items.map(function(it){
+            return '<div class="item"><div class="n">'+it.f.n+(it.f.note?'<em>'+it.f.note+'</em>':'')+'</div>'
+              + '<div class="g">'+amount(it.f,it.g)+'</div></div>';
+          }).join("") + '</div>'
+        + '<div class="meal-m"><span>단백질 <b>'+m.sum.p+'g</b></span><span>탄수 <b>'+m.sum.c+'g</b></span><span>지방 <b>'+m.sum.f+'g</b></span></div>'
+        + '</div>';
+    }).join("");
+
+    $("r-swap").innerHTML =
+      SWAP.map(function(r){ return swap(r[0], r[1]); }).join("") +
+      swap("하루 수분", "<b>"+s.water+"L</b> 이상 · 운동 중 500ml 별도") +
+      swap("지켜야 할 순서", "끼니를 거르면 <b>단백질부터</b> 채우고, 그다음 탄수화물을 맞추세요.");
+
+    $("r-dining").innerHTML = s.dining.map(function(r){ return swap(r[0], r[1]); }).join("");
+    $("r-cardio").innerHTML = s.cardio.map(function(r){ return swap(r[0], r[1]); }).join("");
+
+    var c = s.check;
+    $("r-check").innerHTML =
+      swap("이 식단은 1~2주 유지합니다",
+        "매일 아침 <b>공복 체중</b>을 재고, 주 1회 <b>같은 시간·같은 조명·같은 자세</b>로 눈바디 사진을 남기세요. 2주 뒤 그 수치로 식단을 다시 잡습니다.") +
+      swap("2주 뒤 예상 체중", "<b>"+c.w2+"kg</b> · 현재 "+r1(s.v.weight)+"kg에서 "
+        + (s.dir==="cut" ? "-" : "+") + r1(Math.abs(s.v.weight-c.w2)) + "kg") +
+      c.rules.map(function(r){ return swap(r[0], r[1]); }).join("");
+
+    $("result").classList.add("on");
+    $("preview").classList.remove("on");
+    $("preview").removeAttribute("src");
+  }
+
+  function stat(k,v,d,cls){
+    return '<div><div class="k">'+k+'</div><div class="v '+cls+'">'+v+'</div><div class="d">'+d+'</div></div>';
+  }
+  function mac(cls,k,g,pct){
+    return '<div><div class="k"><span class="dot '+cls+'"></span>'+k+'</div>'
+      + '<div class="v">'+g+'<small>g</small></div><div class="p">'+r0(pct)+'%</div></div>';
+  }
+  function swap(t,c){
+    return '<div class="swap-row"><div class="t">'+t+'</div><div class="c">'+c+'</div></div>';
+  }
+
+  /* ===== 이미지 카드 렌더 (canvas 직접 그리기) ===== */
+  var FONT = '-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
+  function fnt(w,s){ return w+" "+s+"px "+FONT; }
+
+  function drawCard(s){
+    var W = 1080, MAX = 8000, PAD = 72;
+    var cv = $("cv");
+    cv.width = W; cv.height = MAX;
+    var x = cv.getContext("2d");
+
+    x.fillStyle = "#0A0A0B"; x.fillRect(0,0,W,MAX);
+
+    /* 상단 골드 글로우 */
+    var gl = x.createLinearGradient(0,0,0,420);
+    gl.addColorStop(0,"rgba(201,162,39,.16)");
+    gl.addColorStop(1,"rgba(201,162,39,0)");
+    x.fillStyle = gl; x.fillRect(0,0,W,420);
+
+    var y = 84;
+
+    // 아이브로우
+    x.fillStyle = "#C9A227"; x.font = fnt(700,22);
+    x.letterSpacing = "6px";
+    x.fillText("MEAL PLAN", PAD, y);
+    x.letterSpacing = "0px";
+    y += 82;
+
+    // 이름
+    x.fillStyle = "#F2EEE6"; x.font = fnt(800,64);
+    x.fillText(s.v.name + " 님 맞춤 식단", PAD, y);
+    y += 48;
+
+    // 모드 배지
+    var paceName = s.cyc ? "싸이클링" : (s.v.pace==="hard" ? "공격적" : "안정적");
+    var badge = (s.dir==="cut" ? "다이어트" : "벌크업") + " · " + paceName;
+    x.font = fnt(700,24);
+    var bw2 = x.measureText(badge).width + 40;
+    x.fillStyle = "#C9A227"; round(x,PAD,y-30,bw2,44,22); x.fill();
+    x.fillStyle = "#1A1508"; x.textAlign = "center";
+    x.fillText(badge, PAD + bw2/2, y);
+    x.textAlign = "left";
+
+    x.fillStyle = "#8B8578"; x.font = fnt(600,26);
+    var sub = s.v.age + "세 · " + (s.v.sex==="M"?"남성":"여성") + " · " + r1(s.v.height) + "cm · " + s.v.weeks + "주 프로그램";
+    x.fillText(sub, PAD + bw2 + 20, y);
+    y += 62;
+
+    line(x,PAD,y,W-PAD*2); y += 62;
+
+    /* 목표 칼로리 블록 */
+    panel(x,PAD,y,W-PAD*2,232);
+    x.textAlign = "center";
+    x.fillStyle = "#8B8578"; x.font = fnt(700,22);
+    x.letterSpacing = "4px"; x.fillText("하루 목표 섭취량", W/2, y+56); x.letterSpacing = "0px";
+    x.fillStyle = "#E4C55C"; x.font = fnt(800,104);
+    x.fillText(s.kcal.toLocaleString(), W/2 - 34, y+152);
+    var kw = x.measureText(s.kcal.toLocaleString()).width;
+    x.fillStyle = "#8B8578"; x.font = fnt(700,34);
+    x.textAlign = "left";
+    x.fillText("kcal", W/2 - 34 + kw/2 + 14, y+152);
+    x.textAlign = "center";
+    x.fillStyle = "#8B8578"; x.font = fnt(600,24);
+    var dirTxt = s.cyc
+      ? "저탄일 기준 · 고탄일 " + s.cyc.kHigh.toLocaleString() + "kcal"
+      : (s.dir==="cut" ? "체지방 감량 구간" : (s.dir==="bulk" ? "근육 증량 구간" : "체중 유지 구간"))
+        + " · 유지칼로리 " + r0(s.tdee).toLocaleString() + "kcal";
+    x.fillText(dirTxt, W/2, y+198);
+    x.textAlign = "left";
+    y += 232 + 22;
+
+    /* 인바디 3칸 */
+    var cw = (W-PAD*2-24)/3;
+    var trio = [
+      ["체중", r1(s.v.weight)+"kg", "목표 "+r1(s.v.tW)+"kg"],
+      ["체지방률", r1(s.fatPct)+"%", "목표 "+r1(s.tFatPct)+"%"],
+      ["제지방량", r1(s.lbm)+"kg", "기초대사 "+r0(s.bmr).toLocaleString()]
+    ];
+    trio.forEach(function(t,i){
+      var cx = PAD + i*(cw+12);
+      panel(x,cx,y,cw,168);
+      x.textAlign="center";
+      x.fillStyle="#8B8578"; x.font=fnt(700,21); x.fillText(t[0], cx+cw/2, y+50);
+      x.fillStyle="#F2EEE6"; x.font=fnt(800,44); x.fillText(t[1], cx+cw/2, y+104);
+      x.fillStyle="#C9A227"; x.font=fnt(600,21); x.fillText(t[2], cx+cw/2, y+142);
+      x.textAlign="left";
+    });
+    y += 168 + 22;
+
+    /* 매크로 */
+    var pk=s.p*4, ck=s.c*4, fk=s.f*9, tot=pk+ck+fk;
+    panel(x,PAD,y,W-PAD*2,206);
+    var bx = PAD+40, bw = W-PAD*2-80, bh = 18, by = y+44;
+    var segs = [[pk,"#C9A227"],[ck,"#D8C89A"],[fk,"#8E6B34"]];
+    var cur = bx;
+    segs.forEach(function(g,i){
+      var w = bw*g[0]/tot - (i<2?4:0);
+      x.fillStyle = g[1];
+      round(x,cur,by,Math.max(w,2),bh,6); x.fill();
+      cur += w + 4;
+    });
+    var ml = [["단백질",s.p,"#C9A227",pk],["탄수화물",s.c,"#D8C89A",ck],["지방",s.f,"#8E6B34",fk]];
+    ml.forEach(function(m,i){
+      var mx = PAD + 40 + i*((W-PAD*2-80)/3);
+      var mw = (W-PAD*2-80)/3;
+      x.fillStyle = m[2];
+      round(x,mx+mw/2-58,by+58,16,16,4); x.fill();
+      x.fillStyle="#8B8578"; x.font=fnt(600,24);
+      x.textAlign="left"; x.fillText(m[0], mx+mw/2-34, by+72);
+      x.textAlign="center";
+      x.fillStyle="#F2EEE6"; x.font=fnt(800,46);
+      x.fillText(m[1]+"g", mx+mw/2, by+128);
+      x.fillStyle="#8B8578"; x.font=fnt(600,20);
+      x.fillText(r0(m[3]/tot*100)+"%", mx+mw/2, by+158);
+      x.textAlign="left";
+    });
+    y += 206 + 44;
+
+    if(s.cycling) section("탄수 사이클링", s.cycling);
+
+    /* 끼니 */
+    x.fillStyle="#C9A227"; x.font=fnt(700,22); x.letterSpacing="6px";
+    x.fillText(s.cyc ? "저탄일 식단" : "하루 식단", PAD, y); x.letterSpacing="0px";
+    y += 34;
+
+    s.meals.forEach(function(m,i){
+      var rows = m.items.length;
+      var h = 92 + rows*66 + 58;
+      panel(x,PAD,y,W-PAD*2,h);
+
+      // 헤더
+      x.fillStyle="#1C1C1F";
+      round(x,PAD,y,W-PAD*2,88,18,true); x.fill();
+      x.fillStyle="#C9A227"; x.font=fnt(800,30);
+      x.fillText(String(i+1), PAD+34, y+56);
+      x.fillStyle="#F2EEE6"; x.font=fnt(800,32);
+      x.fillText(m.name, PAD+72, y+56);
+      x.textAlign="right";
+      x.fillStyle="#E4C55C"; x.font=fnt(700,28);
+      x.fillText(m.sum.k.toLocaleString()+" kcal", W-PAD-34, y+56);
+      x.textAlign="left";
+
+      var iy = y + 88 + 46;
+      m.items.forEach(function(it,j){
+        x.fillStyle="#F2EEE6"; x.font=fnt(700,28);
+        x.fillText(it.f.n, PAD+34, iy);
+        if(it.f.note){
+          x.fillStyle="#6E6A61"; x.font=fnt(500,20);
+          x.fillText(it.f.note, PAD+34, iy+28);
+        }
+        x.textAlign="right";
+        x.fillStyle="#D8C89A"; x.font=fnt(800,30);
+        x.fillText(amount(it.f,it.g), W-PAD-34, iy+6);
+        x.textAlign="left";
+        if(j < m.items.length-1){
+          x.strokeStyle="#232327"; x.lineWidth=1;
+          x.beginPath(); x.moveTo(PAD+34, iy+44); x.lineTo(W-PAD-34, iy+44); x.stroke();
+        }
+        iy += 66;
+      });
+
+      x.fillStyle="#8B8578"; x.font=fnt(600,22);
+      x.fillText("단백질 "+m.sum.p+"g   ·   탄수 "+m.sum.c+"g   ·   지방 "+m.sum.f+"g", PAD+34, y+h-22);
+
+      y += h + 16;
+    });
+
+    y += 26;
+
+    /* 라벨 + 여러 줄 항목이 들어가는 패널 (교환표·외식 가이드 공용) */
+    function section(title, rows){
+      x.fillStyle="#C9A227"; x.font=fnt(700,22); x.letterSpacing="6px";
+      x.fillText(title, PAD, y); x.letterSpacing="0px";
+      y += 34;
+
+      var items = rows.map(function(r){
+        return {t:r[0], lines:wrap(x, String(r[1]).replace(/<[^>]+>/g,""), W-PAD*2-68, fnt(600,24))};
+      });
+      var h = 40 + items.reduce(function(a,r){ return a + 50 + r.lines.length*34; }, 0);
+      panel(x,PAD,y,W-PAD*2,h);
+      var sy = y+62;
+      items.forEach(function(r,i){
+        x.fillStyle="#C9A227"; x.font=fnt(700,22);
+        x.fillText(r.t, PAD+34, sy);
+        x.fillStyle="#BDB8AC"; x.font=fnt(600,24);
+        r.lines.forEach(function(l,j){ x.fillText(l, PAD+34, sy+34+j*34); });
+        sy += 50 + r.lines.length*34;
+        if(i<items.length-1){
+          x.strokeStyle="#232327"; x.lineWidth=1;
+          x.beginPath(); x.moveTo(PAD+34, sy-28); x.lineTo(W-PAD-34, sy-28); x.stroke();
+        }
+      });
+      y += h + 44;
+    }
+
+    section("바꿔 먹기", SWAP.concat([["하루 수분", s.water+"L 이상 · 운동 중 500ml 별도"]]));
+    section("회사 점심 · 외식할 때", s.dining);
+    section("유산소", s.cardio);
+
+    /* 2주 뒤 재점검 */
+    x.fillStyle="#C9A227"; x.font=fnt(700,22); x.letterSpacing="6px";
+    x.fillText("2주 뒤 다시 잡습니다", PAD, y); x.letterSpacing="0px";
+    y += 34;
+
+    var ck = s.check;
+    var howLines = wrap(x,
+      "매일 아침 공복 체중을 재고, 주 1회 같은 시간 · 같은 조명 · 같은 자세로 눈바디 사진을 남기세요. 2주 뒤 그 수치로 식단을 다시 잡습니다.",
+      W-PAD*2-68, fnt(500,24));
+    var ckH = 56 + howLines.length*36 + 92 + ck.rules.length*76;
+    panel(x,PAD,y,W-PAD*2,ckH);
+
+    var cy = y + 52;
+    x.fillStyle="#BDB8AC"; x.font=fnt(500,24);
+    howLines.forEach(function(l){ x.fillText(l, PAD+34, cy); cy += 36; });
+    cy += 18;
+
+    // 2주 뒤 예상 체중
+    x.fillStyle="#8B8578"; x.font=fnt(600,22);
+    x.fillText("2주 뒤 예상 체중", PAD+34, cy);
+    x.textAlign="right";
+    x.fillStyle="#E4C55C"; x.font=fnt(800,38);
+    x.fillText(ck.w2 + "kg", W-PAD-34, cy+6);
+    x.textAlign="left";
+    cy += 44;
+    x.strokeStyle="#232327"; x.lineWidth=1;
+    x.beginPath(); x.moveTo(PAD+34, cy); x.lineTo(W-PAD-34, cy); x.stroke();
+    cy += 42;
+
+    ck.rules.forEach(function(r){
+      x.fillStyle="#C9A227"; x.font=fnt(700,23);
+      x.fillText(r[0], PAD+34, cy);
+      x.fillStyle="#BDB8AC"; x.font=fnt(500,23);
+      x.fillText(r[1], PAD+34, cy+32);
+      cy += 76;
+    });
+    y += ckH + 40;
+
+    /* 주의 문구 — 도달 지점과 가장 중요한 경고까지 두 개 */
+    s.notes.slice(0,2).forEach(function(nx){
+      var lines = wrap(x, nx.d.replace(/<[^>]+>/g,""), W-PAD*2-68, fnt(500,23));
+      var nh = 64 + lines.length*34;
+      x.fillStyle="rgba(217,138,60,.10)";
+      round(x,PAD,y,W-PAD*2,nh,18); x.fill();
+      x.strokeStyle="rgba(217,138,60,.34)"; x.lineWidth=2;
+      round(x,PAD,y,W-PAD*2,nh,18); x.stroke();
+      x.fillStyle="#D98A3C"; x.font=fnt(800,24);
+      x.fillText(nx.t, PAD+34, y+42);
+      x.fillStyle="#BDB8AC"; x.font=fnt(500,23);
+      lines.forEach(function(l,i){ x.fillText(l, PAD+34, y+80+i*34); });
+      y += nh + 16;
+    });
+    y += 14;
+
+    /* 푸터 */
+    line(x,PAD,y,W-PAD*2); y += 54;
+    x.fillStyle="#F2EEE6"; x.font=fnt(800,30);
+    x.fillText(s.v.trainer || "담당 트레이너", PAD, y);
+    x.fillStyle="#6E6A61"; x.font=fnt(500,21);
+    x.fillText("인바디 수치 기반 설계 · 컨디션에 따라 조정합니다", PAD, y+36);
+    x.textAlign="right";
+    x.fillStyle="#C9A227"; x.font=fnt(700,22); x.letterSpacing="4px";
+    x.fillText(stamp(), W-PAD, y);
+    x.letterSpacing="0px"; x.textAlign="left";
+    y += 96;
+
+    /* 실제 높이로 잘라내기 */
+    var out = document.createElement("canvas");
+    out.width = W; out.height = y;
+    out.getContext("2d").drawImage(cv,0,0,W,y,0,0,W,y);
+    return out;
+  }
+
+  function panel(x,px,py,pw,ph){
+    x.fillStyle="#141416"; round(x,px,py,pw,ph,18); x.fill();
+    x.strokeStyle="#2A2A2E"; x.lineWidth=2; round(x,px,py,pw,ph,18); x.stroke();
+  }
+  function round(x,px,py,pw,ph,r,topOnly){
+    x.beginPath();
+    x.moveTo(px+r,py);
+    x.lineTo(px+pw-r,py); x.quadraticCurveTo(px+pw,py,px+pw,py+r);
+    if(topOnly){ x.lineTo(px+pw,py+ph); x.lineTo(px,py+ph); }
+    else{
+      x.lineTo(px+pw,py+ph-r); x.quadraticCurveTo(px+pw,py+ph,px+pw-r,py+ph);
+      x.lineTo(px+r,py+ph); x.quadraticCurveTo(px,py+ph,px,py+ph-r);
+    }
+    x.lineTo(px,py+r); x.quadraticCurveTo(px,py,px+r,py);
+    x.closePath();
+  }
+  function line(x,px,py,w){
+    x.strokeStyle="#2A2A2E"; x.lineWidth=2;
+    x.beginPath(); x.moveTo(px,py); x.lineTo(px+w,py); x.stroke();
+  }
+  function wrap(x,text,maxW,font){
+    x.font = font;
+    var words = text.split(" "), out = [], cur = "";
+    words.forEach(function(w){
+      var t = cur ? cur+" "+w : w;
+      if(x.measureText(t).width > maxW && cur){ out.push(cur); cur = w; }
+      else cur = t;
+    });
+    if(cur) out.push(cur);
+    return out;
+  }
+  function stamp(){
+    var d = new Date();
+    return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
+  }
+
+  /* ===== 이벤트 ===== */
+  $("btn-make").addEventListener("click", function(){
+    document.querySelectorAll(".err").forEach(function(e){ e.classList.remove("err"); });
+    var s = compute();
+    if(s.error){
+      s.error.forEach(function(id){ $(id).classList.add("err"); });
+      $(s.error[0]).focus();
+      $(s.error[0]).scrollIntoView({behavior:"smooth",block:"center"});
+      return;
+    }
+    state = s;
+    render(s);
+    setTimeout(function(){
+      $("result").scrollIntoView({behavior:"smooth",block:"start"});
+    },60);
+  });
+
+  $("btn-img").addEventListener("click", function(){
+    if(!state) return;
+    var btn = this;
+    btn.disabled = true; btn.textContent = "만드는 중…";
+    setTimeout(function(){
+      try{
+        var out = drawCard(state);
+        var url = out.toDataURL("image/png");
+        var img = $("preview");
+        img.src = url; img.classList.add("on");
+
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = state.v.name + "_식단_" + stamp().replace(/\./g,"") + ".png";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+        $("save-note").innerHTML = '이미지가 저장되었습니다. 저장이 안 됐다면 아래 미리보기를 <b style="color:var(--champagne)">길게 눌러</b> “사진에 추가”를 선택하세요.';
+      }catch(e){
+        $("save-note").textContent = "이미지를 만들지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.";
+      }
+      btn.disabled = false; btn.textContent = "이미지로 저장하기";
+    },30);
+  });
+
+  $("btn-reset").addEventListener("click", function(){
+    ["name","age","height","weight","smm","fat","tWeight","tFatPct","weeks"].forEach(function(id){ $(id).value=""; });
+    document.querySelectorAll(".err").forEach(function(e){ e.classList.remove("err"); });
+    $("result").classList.remove("on");
+    state = null;
+    window.scrollTo({top:0,behavior:"smooth"});
+    $("name").focus();
+  });
+
+  /* 모드·강도에 따라 무엇이 달라지는지 바로 알려준다 */
+  function paceHint(){
+    var m = document.querySelector('input[name=mode]:checked').value;
+    /* 싸이클링은 감량 전용 — 벌크업에서는 감춘다 */
+    $("lCycle").style.display = m==="cut" ? "" : "none";
+    if(m!=="cut" && $("pCycle").checked) $("pSafe").checked = true;
+
+    var p = document.querySelector('input[name=pace]:checked').value;
+    var txt = m==="cut"
+      ? (p==="hard"
+        ? "적자를 유지칼로리의 <b style='color:var(--champagne)'>33%</b>까지 밀어붙이고 단백질을 제지방 kg당 2.6g으로 올립니다. 기간이 짧을 때 쓰되 4주 이상 끌지 마세요."
+        : p==="cycle"
+        ? "주간 총량은 안정적과 같게 두고 <b style='color:var(--champagne)'>저탄 5일 + 고탄 2일</b>로 몰아줍니다. 고탄일을 가장 힘든 운동일에 붙이세요."
+        : "적자를 <b style='color:var(--champagne)'>25%</b> 이내로 잡습니다. 근육을 지키면서 오래 끌고 갈 수 있는 기본값입니다.")
+      : (p==="hard"
+        ? "주당 체중 <b style='color:var(--champagne)'>0.7%</b>까지 올려 빠르게 늘립니다. 지방도 함께 붙습니다."
+        : "주당 체중 <b style='color:var(--champagne)'>0.4%</b> 린벌크. 지방 증가를 최소화합니다.");
+    $("pace-hint").innerHTML = txt;
+  }
+  document.querySelectorAll('input[name=mode],input[name=pace]').forEach(function(el){
+    el.addEventListener("change", paceHint);
+  });
+  paceHint();
+
+  /* 트레이너 이름은 기억 */
+  try{
+    var saved = localStorage.getItem("mp_trainer");
+    if(saved) $("trainer").value = saved;
+    $("trainer").addEventListener("change", function(){
+      localStorage.setItem("mp_trainer", this.value);
+    });
+  }catch(e){}
+
+  /* 엔터로 다음 칸 */
+  var flow = ["name","age","height","weight","smm","fat","tWeight","tFatPct","weeks"];
+  flow.forEach(function(id,i){
+    $(id).addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(i < flow.length-1) $(flow[i+1]).focus();
+        else $("btn-make").click();
+      }
+    });
+  });
+})();
+</script>

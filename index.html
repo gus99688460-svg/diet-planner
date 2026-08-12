@@ -433,9 +433,11 @@
     protein : {n:"프로틴",     note:"1스쿱 30g · 단백질 25g · 물에 타서", kcal:400, p:83.0, c:8.0, f:3.5, unit:"스쿱", per:30, cap:60},
     chicken : {n:"닭가슴살",   note:"생 중량 · 구이 또는 삶기", kcal:106, p:23.4, c:0,    f:1.2},
     yogurt2 : {n:"그릭요거트", note:"무가당 · 편의점 컵 그대로",kcal:60,  p:10.0, c:4.0,  f:0.5},
+    tuna    : {n:"참치캔",     note:"기름 뺀 것",              kcal:110, p:26.0, c:0,    f:1.0, unit:"캔", per:85},
+    porkH   : {n:"돼지 앞다리살",note:"제육용 · 생 중량",      kcal:130, p:20.5, c:0,    f:4.5},
     porkT   : {n:"돼지 안심",  note:"생 중량",                 kcal:120, p:22.0, c:0,    f:3.0},
-    porkH   : {n:"돼지 뒷다리살",note:"생 중량 · 기름 제거",   kcal:130, p:20.5, c:0,    f:4.5},
     beefR   : {n:"소 우둔살",  note:"생 중량 · 홍두깨살 대체 가능",kcal:130,p:21.0,c:0,  f:4.5},
+    tilapia : {n:"틸라피아",   note:"생 중량 · 흰살생선",      kcal:96,  p:20.1, c:0,    f:1.7},
 
     /* 단백질 + 지방 겸용 */
     beefB   : {n:"소 부채살",  note:"생 중량 · 지방까지 채워짐", kcal:210, p:19.0, c:0,   f:14.5},
@@ -457,7 +459,7 @@
       "아침·간단":{p:"protein",               c:"sweet", c2:"banana"},
       "점심":     {p:"chicken",               c:"rice",  c2:"sweet",  f:"oil"},
       "운동 직후":{p:"protein",               c:"banana",c2:"rice"},
-      "저녁":     {p:"porkT",                 c:"sweet", c2:"rice",   f:"oil"},
+      "저녁":     {p:"porkH",                 c:"sweet", c2:"rice",   f:"oil"},
       "간식":     {p:"yogurt2",               c:"banana",c2:"sweet",  f:"almond"}
     },
     bulk: {
@@ -475,12 +477,42 @@
     ["프로틴 1스쿱 = 단백질 25g",
      "닭가슴살 110g · 계란 4개 · 흰자 7개분 · 그릭요거트 250g과 같습니다. 고기가 부담되는 끼니는 프로틴으로 바꾸세요"],
     ["탄수화물 30g 교환", "쌀밥 95g · 베이글 55g · 오트밀 45g · 고구마 100g · 감자 160g · 바나나 1.2개"],
-    ["단백질 20g 교환",   "닭가슴살 85g · 프로틴 0.8스쿱 · 계란 3개 · 돼지 안심 90g · 돼지 뒷다리살 100g · 소 우둔살 95g · 홍두깨살 95g"],
+    ["단백질 20g 교환",   "닭가슴살 85g · 계란 3개 · 참치캔 1캔 · 프로틴 0.8스쿱 · 돼지 앞다리살 100g · 돼지 안심 90g · 소 우둔살 95g · 틸라피아 100g"],
     ["지방 10g 교환",     "계란 1개 · 올리브유 0.7큰술 · 아몬드 17알 · 돼지 목살 70g · 소 부채살 70g"],
     ["지방까지 채워지는 고기", "부채살·목살을 쓰는 끼니는 기름을 따로 넣지 않습니다"],
     ["채소는 마음껏",     "상추·깻잎·양배추·브로콜리·애호박·오이 · 칼로리에 넣지 않으니 양껏 드세요"],
     ["회사에서 먹는 간식", "프로틴 쉐이크 · 그릭요거트 · 바나나 · 아몬드 · 시판 닭가슴살 · 편의점 구운계란"]
   ];
+
+  /* 같은 칸 안에서 바꿔 먹을 수 있는 재료들 — 구하기 쉬운 순서로 */
+  var POOL = {
+    p: ["chicken","egg","tuna","porkH","beefR","porkT","tilapia","protein"],
+    c: ["rice","sweet","potato","bagel","oat","banana"],
+    f: ["oil","almond"]     /* 계란은 단백질이 딸려와 지방 대체로는 맞지 않는다 */
+  };
+
+  /* 눈대중으로 쓰는 짧은 표기 — 계란 6개, 참치캔 2캔, 닭가슴살 180g */
+  function brief(f,g){
+    if(f.unit){
+      var n = f.per < 2 ? Math.round(g/f.per) : Math.round(g/f.per*2)/2;
+      if(n >= 0.5 && Math.abs(g - n*f.per)/g <= 0.2) return (n===0.5 ? "1/2" : n) + f.unit;
+    }
+    return Math.round(g/5)*5 + "g";
+  }
+
+  /* 이 재료 대신 먹을 수 있는 것들을 같은 영양소 기준으로 환산 */
+  function altsOf(key, g, macro){
+    var base = F[key][macro] * g / 100;
+    if(base <= 0) return "";
+    var out = [];
+    POOL[macro].forEach(function(k){
+      if(k === key || out.length >= 3) return;
+      var f = F[k];
+      if(!f[macro]) return;
+      out.push(f.n + " " + brief(f, base / (f[macro]/100)));
+    });
+    return out.length ? "또는 " + out.join(" · ") : "";
+  }
 
   /* 끼니 템플릿 고르기 — 아침은 유형에 따라 갈린다 */
   function tplFor(mode, meal, bf){
@@ -718,13 +750,18 @@
       var fAmt = ff ? Math.max(0, mf - usedF) / (ff.f/100) : 0;
 
       /* 프로틴은 스쿱으로 뜨는 재료라 반 스쿱(15g) 단위로 맞춘다 */
-      items.push({f:pf, key:t.p,
+      items.push({f:pf, key:t.p, macro:"p",
         g: t.p==="protein" ? Math.max(15, Math.round(pAmt/15)*15) : Math.round(pAmt/5)*5});
-      if(pAmt2 >= 20) items.push({f:F[t.p2], g:Math.round(pAmt2/5)*5, key:t.p2});
-      fixed.forEach(function(it){ items.push(it); });
-      items.push({f:cf, g:Math.round(cAmt/5)*5, key:t.c});
-      if(cAmt2 >= 20) items.push({f:cf2, g:Math.round(cAmt2/5)*5, key:t.c2});
-      if(fAmt >= 6) items.push({f:ff, g:Math.round(fAmt), key:t.f});
+      if(pAmt2 >= 20) items.push({f:F[t.p2], g:Math.round(pAmt2/5)*5, key:t.p2, macro:"p"});
+      fixed.forEach(function(it){ it.macro = "p"; items.push(it); });
+      items.push({f:cf, g:Math.round(cAmt/5)*5, key:t.c, macro:"c"});
+      if(cAmt2 >= 20) items.push({f:cf2, g:Math.round(cAmt2/5)*5, key:t.c2, macro:"c"});
+      if(fAmt >= 6) items.push({f:ff, g:Math.round(fAmt), key:t.f, macro:"f"});
+
+      /* 각 재료에 "또는 ○○" 대안을 붙여 회원이 고를 수 있게 한다 */
+      items.forEach(function(it){
+        if(it.g && it.macro) it.alt = altsOf(it.key, it.g, it.macro);
+      });
       /* 아침·간식은 손질 없이 · 운동 직후와 간단형 아침은 최소한만 남긴다 */
       var noVeg = m[0]==="운동 직후" || (m[0]==="아침" && v.bf==="simple");
       if(!noVeg){
@@ -871,7 +908,8 @@
         + '<div class="meal-h"><div class="name"><b>'+(i+1)+'</b>'+m.name+'</div>'
         + '<div class="kc">'+m.sum.k.toLocaleString()+' kcal</div></div>'
         + '<div class="meal-b">' + m.items.map(function(it){
-            return '<div class="item"><div class="n">'+it.f.n+(it.f.note?'<em>'+it.f.note+'</em>':'')+'</div>'
+            var sub = it.alt || it.f.note;
+            return '<div class="item"><div class="n">'+it.f.n+(sub?'<em>'+sub+'</em>':'')+'</div>'
               + '<div class="g">'+amount(it.f,it.g)+'</div></div>';
           }).join("") + '</div>'
         + '<div class="meal-m"><span>단백질 <b>'+m.sum.p+'g</b></span><span>탄수 <b>'+m.sum.c+'g</b></span><span>지방 <b>'+m.sum.f+'g</b></span></div>'
@@ -1052,9 +1090,11 @@
       m.items.forEach(function(it,j){
         x.fillStyle="#F2EEE6"; x.font=fnt(700,28);
         x.fillText(it.f.n, PAD+34, iy);
-        if(it.f.note){
-          x.fillStyle="#6E6A61"; x.font=fnt(500,20);
-          x.fillText(it.f.note, PAD+34, iy+28);
+        var sub = it.alt || it.f.note;
+        if(sub){
+          x.fillStyle= it.alt ? "#8B8578" : "#6E6A61";
+          x.font=fnt(500,20);
+          x.fillText(sub, PAD+34, iy+28);
         }
         x.textAlign="right";
         x.fillStyle="#D8C89A"; x.font=fnt(800,30);

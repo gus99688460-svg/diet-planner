@@ -211,6 +211,32 @@
   #preview.on{display:block}
   .save-note{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.6}
 
+  /* 저장된 회원 */
+  .mem{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-bottom:8px;
+  }
+  .mem-main{flex:1;min-width:0;cursor:pointer}
+  .mem-name{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+  .mem-name span{font-size:11.5px;color:var(--muted);font-weight:600;margin-left:7px;font-variant-numeric:tabular-nums}
+  .mem-stat{font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+  .mem-stat b{font-weight:800;margin-left:6px}
+  .mem-stat b.down{color:var(--gold-hi)}
+  .mem-stat b.up{color:var(--ok)}
+  .mem-tag{
+    display:inline-block;font-size:10.5px;font-weight:700;color:var(--gold);
+    border:1px solid rgba(201,162,39,.35);border-radius:5px;padding:1px 5px;margin-left:6px;
+  }
+  .mem-del{
+    flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--muted);
+    width:34px;height:34px;padding:0;border-radius:9px;font-size:17px;line-height:1;font-weight:700;
+  }
+  .mem-del:hover{border-color:#8C4436;color:#C46A58}
+  .mem:hover{border-color:#3A3A40}
+  .mem-tools{display:flex;gap:8px;margin-top:10px}
+  .mem-tools button{flex:1;padding:10px;font-size:12.5px;font-weight:700}
+
   footer{padding:30px 0 20px;text-align:center;font-size:11.5px;color:#55524B;line-height:1.7}
 
   .err{border-color:#8C4436 !important;background:rgba(140,68,54,.1) !important}
@@ -229,6 +255,17 @@
 </header>
 
 <main class="wrap">
+
+  <section class="block" id="saved-wrap" style="display:none">
+    <div class="block-head"><h2>저장된 회원</h2><span id="saved-count"></span></div>
+    <div id="saved-list"></div>
+    <div class="mem-tools">
+      <button class="btn-ghost" id="btn-export">백업 파일 내려받기</button>
+      <button class="btn-ghost" id="btn-import">백업 불러오기</button>
+    </div>
+    <input type="file" id="file-import" accept="application/json,.json" style="display:none">
+    <p class="hint">기록은 이 기기의 브라우저에만 저장됩니다. 폰과 PC는 따로 쌓이니, 옮기려면 백업 파일을 쓰세요.</p>
+  </section>
 
   <section class="block">
     <div class="block-head"><h2>회원 정보</h2><span>이름 · 나이 · 신장</span></div>
@@ -288,6 +325,14 @@
           <option value="5">3끼 + 간식 2</option>
         </select></label>
       <div class="f full">
+        <span style="font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">아침 유형</span>
+        <div class="seg">
+          <input type="radio" name="bf" id="bfMeal" value="meal" checked><label for="bfMeal">식사형</label>
+          <input type="radio" name="bf" id="bfSimple" value="simple"><label for="bfSimple">간단형</label>
+        </div>
+        <p class="hint" id="bf-hint"></p>
+      </div>
+      <div class="f full">
         <span style="font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">활동량 · 주간 운동 빈도</span>
         <div class="seg">
           <input type="radio" name="act" id="a1" value="1.2"><label for="a1">거의 안 함</label>
@@ -335,13 +380,16 @@
     <p class="rule">유산소</p>
     <div class="card swap" id="r-cardio"></div>
 
-    <p class="rule">CHECK</p>
-    <div class="card swap" id="r-check"></div>
 
     <p class="rule">SAVE</p>
     <div class="card" style="padding:16px">
-      <button class="btn-gold" id="btn-img" style="width:100%">이미지로 저장하기</button>
-      <p class="save-note" id="save-note">누르면 회원에게 보낼 카드 이미지(PNG)가 만들어집니다. 아이폰에서 자동 저장이 안 되면 아래 미리보기를 <b style="color:var(--champagne)">길게 눌러</b> 저장하세요.</p>
+      <button class="btn-ghost" id="btn-keep" style="width:100%;margin-bottom:10px">이 회원 기록 저장</button>
+      <button class="btn-gold" id="btn-img" style="width:100%">이미지 만들기</button>
+      <div id="save-actions" style="display:none;gap:10px;margin-top:10px">
+        <button class="btn-gold" id="btn-share" style="flex:1;display:none">회원에게 보내기</button>
+        <button class="btn-ghost" id="btn-dl" style="flex:1">사진으로 저장</button>
+      </div>
+      <p class="save-note" id="save-note">누르면 회원에게 보낼 카드 이미지(PNG)가 만들어집니다.</p>
       <img id="preview" alt="식단 카드 미리보기">
     </div>
   </div>
@@ -388,17 +436,15 @@
     porkT   : {n:"돼지 안심",  note:"생 중량",                 kcal:120, p:22.0, c:0,    f:3.0},
     porkH   : {n:"돼지 뒷다리살",note:"생 중량 · 기름 제거",   kcal:130, p:20.5, c:0,    f:4.5},
     beefR   : {n:"소 우둔살",  note:"생 중량 · 홍두깨살 대체 가능",kcal:130,p:21.0,c:0,  f:4.5},
-    tilapia : {n:"틸라피아",   note:"생 중량 · 흰살생선",      kcal:96,  p:20.1, c:0,    f:1.7},
 
     /* 단백질 + 지방 겸용 */
     beefB   : {n:"소 부채살",  note:"생 중량 · 지방까지 채워짐", kcal:210, p:19.0, c:0,   f:14.5},
-    mackerel: {n:"고등어",     note:"생 중량 · 오메가3 지방원", kcal:190, p:20.0, c:0,    f:12.0},
+    porkB   : {n:"돼지 목살",  note:"생 중량 · 지방까지 채워짐", kcal:200, p:18.5, c:0,   f:14.0},
 
     /* 지방 */
     egg     : {n:"계란",       note:"삶아두거나 편의점 구운계란",kcal:144, p:12.4, c:0.8,  f:9.6,  unit:"개", per:50},
     oil     : {n:"올리브유",   note:"조리용",                  kcal:884, p:0,    c:0,    f:100.0,unit:"큰술", per:15},
-    almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2},
-    avocado : {n:"아보카도",   note:"",                        kcal:160, p:2.0,  c:9.0,  f:15.0, unit:"개", per:140}
+    almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2}
   };
 
   /* 끼니 구성 템플릿
@@ -408,16 +454,18 @@
     /* 아침은 조리 없이 · 간식은 회사 책상에서 바로 먹을 수 있는 것으로 */
     cut: {
       "아침":     {p:"protein", p2:"yogurt2", c:"oat",   c2:"banana", f:"almond",  fix:[{k:"egg", g:100}]},
+      "아침·간단":{p:"protein",               c:"sweet", c2:"banana"},
       "점심":     {p:"chicken",               c:"rice",  c2:"sweet",  f:"oil"},
       "운동 직후":{p:"protein",               c:"banana",c2:"rice"},
-      "저녁":     {p:"tilapia",               c:"sweet", c2:"rice",   f:"avocado"},
+      "저녁":     {p:"porkT",                 c:"sweet", c2:"rice",   f:"oil"},
       "간식":     {p:"yogurt2",               c:"banana",c2:"sweet",  f:"almond"}
     },
     bulk: {
       "아침":     {p:"protein", p2:"yogurt2", c:"bagel", c2:"oat",    f:"oil",     fix:[{k:"egg", g:150}]},
+      "아침·간단":{p:"protein",               c:"bagel", c2:"banana"},
       "점심":     {p:"beefR",                 c:"rice",  c2:"sweet",  f:"oil"},
       "운동 직후":{p:"protein",               c:"banana",c2:"rice"},
-      "저녁":     {p:"mackerel",              c:"rice",  c2:"potato", f:"avocado"},
+      "저녁":     {p:"porkB",                 c:"rice",  c2:"potato", f:"oil"},
       "간식":     {p:"yogurt2",               c:"bagel", c2:"banana", f:"almond"}
     }
   };
@@ -427,11 +475,18 @@
     ["프로틴 1스쿱 = 단백질 25g",
      "닭가슴살 110g · 계란 4개 · 흰자 7개분 · 그릭요거트 250g과 같습니다. 고기가 부담되는 끼니는 프로틴으로 바꾸세요"],
     ["탄수화물 30g 교환", "쌀밥 95g · 베이글 55g · 오트밀 45g · 고구마 100g · 감자 160g · 바나나 1.2개"],
-    ["단백질 20g 교환",   "닭가슴살 85g · 프로틴 0.8스쿱 · 계란 3개 · 돼지 안심 90g · 소 우둔살 95g · 틸라피아 100g"],
-    ["지방 10g 교환",     "계란 1개 · 올리브유 0.7큰술 · 아몬드 17알 · 아보카도 70g · 고등어 85g"],
-    ["지방까지 채워지는 고기", "부채살·고등어를 쓰는 끼니는 기름을 따로 넣지 않습니다"],
+    ["단백질 20g 교환",   "닭가슴살 85g · 프로틴 0.8스쿱 · 계란 3개 · 돼지 안심 90g · 돼지 뒷다리살 100g · 소 우둔살 95g · 홍두깨살 95g"],
+    ["지방 10g 교환",     "계란 1개 · 올리브유 0.7큰술 · 아몬드 17알 · 돼지 목살 70g · 소 부채살 70g"],
+    ["지방까지 채워지는 고기", "부채살·목살을 쓰는 끼니는 기름을 따로 넣지 않습니다"],
+    ["채소는 마음껏",     "상추·깻잎·양배추·브로콜리·애호박·오이 · 칼로리에 넣지 않으니 양껏 드세요"],
     ["회사에서 먹는 간식", "프로틴 쉐이크 · 그릭요거트 · 바나나 · 아몬드 · 시판 닭가슴살 · 편의점 구운계란"]
   ];
+
+  /* 끼니 템플릿 고르기 — 아침은 유형에 따라 갈린다 */
+  function tplFor(mode, meal, bf){
+    if(meal === "아침" && bf === "simple") return TPL[mode]["아침·간단"];
+    return TPL[mode][meal];
+  }
 
   /* 그램 → 회원이 셀 수 있는 단위 (0.5 단위 반올림) */
   function amount(f,g){
@@ -472,6 +527,7 @@
       act   : parseFloat(document.querySelector('input[name=act]:checked').value),
       mode  : document.querySelector('input[name=mode]:checked').value,
       pace  : document.querySelector('input[name=pace]:checked').value,
+      bf    : document.querySelector('input[name=bf]:checked').value,
       meals : parseInt($("meals").value,10),
       trainer:($("trainer").value||"").trim()
     };
@@ -568,8 +624,8 @@
     if(capped){
       notes.unshift({t:v.weeks+"주 뒤 도달 지점",
         d:"입력하신 목표는 "+v.weeks+"주 안에 닿지 않습니다. 이 식단을 지키면 <b>"+v.weeks+"주 뒤 "
-          + reach.w+"kg · 체지방률 "+r1(reach.pct)+"%</b>까지 갑니다. 목표까지 그대로 가려면 <b>약 "+needWeeks+"주</b>가 필요합니다."
-          + (hard ? "" : " 더 당기려면 <b>공격적</b>으로 바꿔보세요.")});
+          + reach.w+"kg · 체지방률 "+r1(reach.pct)+"%</b>까지 갑니다. 목표까지 그대로 가려면 <b>약 "+needWeeks+"주</b>가 필요합니다.",
+        tip:(hard ? "" : "더 당기려면 <b>공격적</b>으로 바꿔보세요.")});   /* 트레이너 화면에만 */
     } else {
       notes.unshift({t:v.weeks+"주 뒤 도달 지점",
         d:"이 식단을 지키면 <b>"+v.weeks+"주 뒤 "+reach.w+"kg · 체지방률 "+r1(reach.pct)+"%</b>에 닿습니다. 목표 안에 들어옵니다."});
@@ -615,13 +671,13 @@
 
     /* 운동 직후는 지방을 넣지 않는다 — 그 몫은 나머지 끼니가 나눠 갖는다 */
     var noFatShare = set.reduce(function(a,m){
-      return a + (TPL[v.mode][m[0]].f ? 0 : m[1]);
+      return a + (tplFor(v.mode, m[0], v.bf).f ? 0 : m[1]);
     }, 0);
     var fatScale = noFatShare < 1 ? 1/(1-noFatShare) : 1;
 
     var meals = set.map(function(m){
       var ratio = m[1];
-      var t0 = TPL[v.mode][m[0]];
+      var t0 = tplFor(v.mode, m[0], v.bf);
       var mp = pG*ratio, mc = cUse*ratio, mf = t0.f ? fUse*ratio*fatScale : 0;
       var t = t0;
       var pf = F[t.p], cf = F[t.c], ff = t.f ? F[t.f] : null;
@@ -669,11 +725,12 @@
       items.push({f:cf, g:Math.round(cAmt/5)*5, key:t.c});
       if(cAmt2 >= 20) items.push({f:cf2, g:Math.round(cAmt2/5)*5, key:t.c2});
       if(fAmt >= 6) items.push({f:ff, g:Math.round(fAmt), key:t.f});
-      /* 아침·간식은 손질 없이 · 운동 직후는 흡수가 빠른 것만 남긴다 */
-      if(m[0] !== "운동 직후"){
+      /* 아침·간식은 손질 없이 · 운동 직후와 간단형 아침은 최소한만 남긴다 */
+      var noVeg = m[0]==="운동 직후" || (m[0]==="아침" && v.bf==="simple");
+      if(!noVeg){
         var easy = m[0]==="간식" || m[0]==="아침";
         items.push({f:{n:"채소", note: easy ? "방울토마토·오이·파프리카 등 씻어만 두기"
-                                            : "쌈채소·브로콜리·오이 등 자유롭게"}, g:0, key:"veg"});
+                                            : "상추·깻잎·양배추·브로콜리 등 자유롭게"}, g:0, key:"veg"});
       }
 
       var sum = {k:0,p:0,c:0,f:0};
@@ -687,21 +744,6 @@
 
       return {name:m[0], items:items, sum:{k:r0(sum.k),p:r0(sum.p),c:r0(sum.c),f:r0(sum.f)}};
     });
-
-    /* 2주 뒤 재점검 기준 — 이 식단을 1~2주 유지한 다음 수치를 보고 조정한다 */
-    var wk2 = Math.round((v.weight - perWeekKg*2)*10)/10;
-    var adj = Math.max(15, Math.min(35, r5(cG*0.15)));
-    var check = {
-      w2 : wk2,
-      adj: adj,
-      rules: dir==="cut"
-        ? [["예상대로 빠졌으면", "그대로 2주 더 유지합니다"],
-           ["덜 빠졌으면", "탄수화물을 하루 "+adj+"g 줄이거나 유산소를 주 2회 추가합니다"],
-           ["더 빠졌으면", "탄수화물을 하루 "+adj+"g 늘립니다 · 근손실 신호일 수 있습니다"]]
-        : [["예상대로 늘었으면", "그대로 2주 더 유지합니다"],
-           ["안 늘었으면", "탄수화물을 하루 "+adj+"g 늘립니다"],
-           ["너무 빨리 늘면", "탄수화물을 하루 "+adj+"g 줄입니다 · 지방부터 붙고 있다는 뜻입니다"]]
-    };
 
     /* 탄수 사이클링 운영표 */
     var cycling = null;
@@ -780,7 +822,7 @@
     ];
 
     return {
-      v:v, notes:notes, dir:dir, check:check, dining:dining, reach:reach, cardio:cardio,
+      v:v, notes:notes, dir:dir, dining:dining, reach:reach, cardio:cardio,
       cyc:cyc, cycling:cycling,
       fatPct:fatPct, lbm:lbm, bmr:bmr, tdee:tdee,
       tFat:tFat, tFatPct:tFat/v.tW*100, fatLoss:fatLoss,
@@ -806,7 +848,8 @@
     if(s.cycling) $("r-cycling").innerHTML = s.cycling.map(function(r){ return swap(r[0], r[1]); }).join("");
 
     $("r-notice").innerHTML = s.notes.map(function(n){
-      return '<div class="notice"><span class="ic">!</span><span><b>'+n.t+'</b><br>'+n.d+'</span></div>';
+      return '<div class="notice"><span class="ic">!</span><span><b>'+n.t+'</b><br>'+n.d
+        + (n.tip ? ' <span style="color:var(--muted)">'+n.tip+'</span>' : '') + '</span></div>';
     }).join("");
 
     var wDiff = s.v.tW - s.v.weight;
@@ -843,17 +886,14 @@
     $("r-dining").innerHTML = s.dining.map(function(r){ return swap(r[0], r[1]); }).join("");
     $("r-cardio").innerHTML = s.cardio.map(function(r){ return swap(r[0], r[1]); }).join("");
 
-    var c = s.check;
-    $("r-check").innerHTML =
-      swap("이 식단은 1~2주 유지합니다",
-        "매일 아침 <b>공복 체중</b>을 재고, 주 1회 <b>같은 시간·같은 조명·같은 자세</b>로 눈바디 사진을 남기세요. 2주 뒤 그 수치로 식단을 다시 잡습니다.") +
-      swap("2주 뒤 예상 체중", "<b>"+c.w2+"kg</b> · 현재 "+r1(s.v.weight)+"kg에서 "
-        + (s.dir==="cut" ? "-" : "+") + r1(Math.abs(s.v.weight-c.w2)) + "kg") +
-      c.rules.map(function(r){ return swap(r[0], r[1]); }).join("");
-
+    /* 새로 계산했으면 이전 이미지는 버린다 */
     $("result").classList.add("on");
     $("preview").classList.remove("on");
     $("preview").removeAttribute("src");
+    $("save-actions").style.display = "none";
+    $("btn-img").textContent = "이미지 만들기";
+    $("save-note").textContent = "누르면 회원에게 보낼 카드 이미지(PNG)가 만들어집니다.";
+    if(madeUrl){ URL.revokeObjectURL(madeUrl); madeUrl = null; madeBlob = null; }
   }
 
   function stat(k,v,d,cls){
@@ -1065,43 +1105,7 @@
     section("회사 점심 · 외식할 때", s.dining);
     section("유산소", s.cardio);
 
-    /* 2주 뒤 재점검 */
-    x.fillStyle="#C9A227"; x.font=fnt(700,22); x.letterSpacing="6px";
-    x.fillText("2주 뒤 다시 잡습니다", PAD, y); x.letterSpacing="0px";
-    y += 34;
-
-    var ck = s.check;
-    var howLines = wrap(x,
-      "매일 아침 공복 체중을 재고, 주 1회 같은 시간 · 같은 조명 · 같은 자세로 눈바디 사진을 남기세요. 2주 뒤 그 수치로 식단을 다시 잡습니다.",
-      W-PAD*2-68, fnt(500,24));
-    var ckH = 56 + howLines.length*36 + 92 + ck.rules.length*76;
-    panel(x,PAD,y,W-PAD*2,ckH);
-
-    var cy = y + 52;
-    x.fillStyle="#BDB8AC"; x.font=fnt(500,24);
-    howLines.forEach(function(l){ x.fillText(l, PAD+34, cy); cy += 36; });
-    cy += 18;
-
-    // 2주 뒤 예상 체중
-    x.fillStyle="#8B8578"; x.font=fnt(600,22);
-    x.fillText("2주 뒤 예상 체중", PAD+34, cy);
-    x.textAlign="right";
-    x.fillStyle="#E4C55C"; x.font=fnt(800,38);
-    x.fillText(ck.w2 + "kg", W-PAD-34, cy+6);
-    x.textAlign="left";
-    cy += 44;
-    x.strokeStyle="#232327"; x.lineWidth=1;
-    x.beginPath(); x.moveTo(PAD+34, cy); x.lineTo(W-PAD-34, cy); x.stroke();
-    cy += 42;
-
-    ck.rules.forEach(function(r){
-      x.fillStyle="#C9A227"; x.font=fnt(700,23);
-      x.fillText(r[0], PAD+34, cy);
-      x.fillStyle="#BDB8AC"; x.font=fnt(500,23);
-      x.fillText(r[1], PAD+34, cy+32);
-      cy += 76;
-    });
-    y += ckH + 40;
+    /* 2주 재점검은 트레이너가 보는 정보라 카드에는 넣지 않는다 */
 
     /* 주의 문구 — 도달 지점과 가장 중요한 경고까지 두 개 */
     s.notes.slice(0,2).forEach(function(nx){
@@ -1191,28 +1195,78 @@
     },60);
   });
 
+  var madeBlob = null, madeUrl = null, madeName = "";
+
+  /* 만들기 — 큰 이미지는 dataURL보다 Blob이 안정적이다 */
   $("btn-img").addEventListener("click", function(){
     if(!state) return;
     var btn = this;
     btn.disabled = true; btn.textContent = "만드는 중…";
+    $("save-note").textContent = "카드를 그리는 중입니다…";
+
     setTimeout(function(){
+      var done = function(msg){
+        btn.disabled = false; btn.textContent = "이미지 다시 만들기";
+        $("save-note").innerHTML = msg;
+      };
       try{
         var out = drawCard(state);
-        var url = out.toDataURL("image/png");
-        var img = $("preview");
-        img.src = url; img.classList.add("on");
+        madeName = state.v.name + "_식단_" + stamp().replace(/\./g,"") + ".png";
 
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = state.v.name + "_식단_" + stamp().replace(/\./g,"") + ".png";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        var handle = function(blob){
+          if(!blob) return done("이미지를 만들지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.");
+          if(madeUrl) URL.revokeObjectURL(madeUrl);
+          madeBlob = blob;
+          madeUrl  = URL.createObjectURL(blob);
+          $("preview").src = madeUrl;
+          $("preview").classList.add("on");
+          $("save-actions").style.display = "flex";
 
-        $("save-note").innerHTML = '이미지가 저장되었습니다. 저장이 안 됐다면 아래 미리보기를 <b style="color:var(--champagne)">길게 눌러</b> “사진에 추가”를 선택하세요.';
+          /* 폰에서 공유 시트를 열 수 있으면 그게 가장 확실하다 */
+          var canShare = false;
+          try{
+            var f = new File([blob], madeName, {type:"image/png"});
+            canShare = !!(navigator.canShare && navigator.canShare({files:[f]}));
+          }catch(e){}
+          $("btn-share").style.display = canShare ? "" : "none";
+
+          done(canShare
+            ? '<b style="color:var(--champagne)">회원에게 보내기</b>를 누르면 카카오톡·문자로 바로 전송할 수 있고, <b style="color:var(--champagne)">사진으로 저장</b>은 앨범에 담습니다.'
+            : '<b style="color:var(--champagne)">사진으로 저장</b>을 누르세요. 저장이 안 되면 아래 미리보기를 <b style="color:var(--champagne)">길게 눌러</b> “이미지 저장”을 선택하면 됩니다.');
+        };
+
+        if(out.toBlob) out.toBlob(handle, "image/png");
+        else {   /* 아주 오래된 브라우저 폴백 */
+          var b = atob(out.toDataURL("image/png").split(",")[1]);
+          var arr = new Uint8Array(b.length);
+          for(var i=0;i<b.length;i++) arr[i] = b.charCodeAt(i);
+          handle(new Blob([arr], {type:"image/png"}));
+        }
       }catch(e){
-        $("save-note").textContent = "이미지를 만들지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.";
+        done("이미지를 만들지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.");
       }
-      btn.disabled = false; btn.textContent = "이미지로 저장하기";
     },30);
+  });
+
+  /* 공유 시트 — 카톡으로 바로 */
+  $("btn-share").addEventListener("click", function(){
+    if(!madeBlob) return;
+    try{
+      var f = new File([madeBlob], madeName, {type:"image/png"});
+      navigator.share({files:[f], title: state.v.name + " 님 맞춤 식단"})
+        .catch(function(){ /* 사용자가 취소한 경우 — 아무것도 하지 않는다 */ });
+    }catch(e){
+      $("save-note").textContent = "공유를 열지 못했습니다. 사진으로 저장한 뒤 보내주세요.";
+    }
+  });
+
+  /* 저장 */
+  $("btn-dl").addEventListener("click", function(){
+    if(!madeUrl) return;
+    var a = document.createElement("a");
+    a.href = madeUrl; a.download = madeName; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    $("save-note").innerHTML = '저장을 시작했습니다. 아이폰에서 앨범에 없다면 <b style="color:var(--champagne)">파일 앱</b>을 확인하거나, 아래 미리보기를 길게 눌러 “이미지 저장”을 선택하세요.';
   });
 
   $("btn-reset").addEventListener("click", function(){
@@ -1222,6 +1276,151 @@
     state = null;
     window.scrollTo({top:0,behavior:"smooth"});
     $("name").focus();
+  });
+
+  /* ===== 회원 기록 — 이 기기 브라우저에 남긴다 ===== */
+  var STORE = "mp_members_v1";
+
+  function loadAll(){
+    try{ var a = JSON.parse(localStorage.getItem(STORE) || "[]"); return a.length!==undefined ? a : []; }
+    catch(e){ return []; }
+  }
+  function saveAll(a){
+    try{ localStorage.setItem(STORE, JSON.stringify(a)); return true; }
+    catch(e){ return false; }
+  }
+
+  function keepMember(){
+    if(!state) return;
+    var all = loadAll();
+    var rec = {
+      id    : String(Date.now()) + Math.random().toString(36).slice(2,6),
+      name  : state.v.name,
+      date  : stamp(),
+      v     : state.v,
+      kcal  : state.kcal,
+      weight: state.v.weight,
+      fatPct: Math.round(state.fatPct*10)/10,
+      mode  : state.dir, pace: state.v.pace
+    };
+    /* 같은 회원을 같은 날 다시 저장하면 덮어쓴다 */
+    all = all.filter(function(m){ return !(m.name===rec.name && m.date===rec.date); });
+    all.unshift(rec);
+    if(all.length > 300) all = all.slice(0,300);
+
+    if(saveAll(all)){
+      renderSaved();
+      flash($("btn-keep"), "저장했습니다", "이 회원 기록 저장");
+    } else {
+      flash($("btn-keep"), "저장 공간이 부족합니다", "이 회원 기록 저장");
+    }
+  }
+
+  function flash(btn, msg, back){
+    btn.textContent = msg; btn.disabled = true;
+    setTimeout(function(){ btn.textContent = back; btn.disabled = false; }, 1600);
+  }
+
+  function renderSaved(){
+    var all = loadAll();
+    $("saved-wrap").style.display = all.length ? "block" : "none";
+    $("saved-count").textContent = all.length ? all.length + "명 · 눌러서 불러오기" : "";
+
+    $("saved-list").innerHTML = all.map(function(m){
+      /* 같은 회원의 직전 기록과 견줘 변화를 보여준다 */
+      var prev = all.filter(function(o){ return o.name===m.name && o.date < m.date; })[0];
+      var diff = "";
+      if(prev){
+        var d = Math.round((m.weight - prev.weight)*10)/10;
+        if(d !== 0) diff = '<b class="'+(d<0?"down":"up")+'">'+(d>0?"+":"")+d+'kg</b>';
+      }
+      var tag = (m.mode==="bulk" ? "벌크업" : "다이어트")
+              + (m.pace==="hard" ? " · 공격적" : m.pace==="cycle" ? " · 싸이클링" : "");
+      return '<div class="mem">'
+        + '<div class="mem-main" data-load="'+m.id+'">'
+        +   '<div class="mem-name">'+esc(m.name)+'<span>'+m.date+'</span><span class="mem-tag">'+tag+'</span></div>'
+        +   '<div class="mem-stat">'+m.weight+'kg · 체지방 '+m.fatPct+'% · '+m.kcal.toLocaleString()+'kcal'+diff+'</div>'
+        + '</div>'
+        + '<button class="mem-del" data-del="'+m.id+'" aria-label="삭제">×</button>'
+        + '</div>';
+    }).join("");
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+    });
+  }
+
+  function loadMember(id){
+    var m = loadAll().filter(function(o){ return o.id===id; })[0];
+    if(!m) return;
+    var v = m.v;
+    ["name","age","height","weight","smm","fat","tWeight","tFatPct","weeks"].forEach(function(k){
+      var val = v[k==="tWeight" ? "tW" : k==="tFatPct" ? "tFp" : k];
+      $(k).value = (val==null || val!==val) ? "" : val;   // null·NaN 방어
+    });
+    document.querySelector('input[name=sex][value="'+(v.sex||"M")+'"]').checked = true;
+    document.querySelector('input[name=mode][value="'+(v.mode||"cut")+'"]').checked = true;
+    var pc = document.querySelector('input[name=pace][value="'+(v.pace||"safe")+'"]');
+    if(pc) pc.checked = true;
+    var bfc = document.querySelector('input[name=bf][value="'+(v.bf||"meal")+'"]');
+    if(bfc) bfc.checked = true;
+    if(v.meals) $("meals").value = v.meals;
+    if(v.trainer) $("trainer").value = v.trainer;
+    document.querySelectorAll('input[name=act]').forEach(function(el){
+      if(parseFloat(el.value) === v.act) el.checked = true;
+    });
+    paceHint();
+    $("btn-make").click();
+  }
+
+  $("btn-keep").addEventListener("click", keepMember);
+
+  $("saved-list").addEventListener("click", function(e){
+    var del = e.target.closest("[data-del]");
+    if(del){
+      var all = loadAll().filter(function(m){ return m.id !== del.getAttribute("data-del"); });
+      saveAll(all); renderSaved(); return;
+    }
+    var ld = e.target.closest("[data-load]");
+    if(ld) loadMember(ld.getAttribute("data-load"));
+  });
+
+  /* 백업 — 기기를 옮길 때 */
+  $("btn-export").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(loadAll(), null, 1)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "식단설계기_회원기록_" + stamp().replace(/\./g,"") + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+  });
+
+  $("btn-import").addEventListener("click", function(){ $("file-import").click(); });
+
+  $("file-import").addEventListener("change", function(){
+    var f = this.files && this.files[0];
+    if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var incoming = JSON.parse(fr.result);
+        if(!incoming.length && incoming.length!==0) throw 0;
+        var all = loadAll(), seen = {};
+        all.forEach(function(m){ seen[m.name+"|"+m.date] = 1; });
+        incoming.forEach(function(m){
+          if(m && m.name && m.date && !seen[m.name+"|"+m.date]){ all.push(m); seen[m.name+"|"+m.date]=1; }
+        });
+        all.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+        saveAll(all); renderSaved();
+        flash($("btn-import"), "불러왔습니다", "백업 불러오기");
+      }catch(e){
+        flash($("btn-import"), "파일을 읽지 못했습니다", "백업 불러오기");
+      }
+    };
+    fr.readAsText(f);
+    this.value = "";
   });
 
   /* 모드·강도에 따라 무엇이 달라지는지 바로 알려준다 */
@@ -1242,11 +1441,17 @@
         ? "주당 체중 <b style='color:var(--champagne)'>0.7%</b>까지 올려 빠르게 늘립니다. 지방도 함께 붙습니다."
         : "주당 체중 <b style='color:var(--champagne)'>0.4%</b> 린벌크. 지방 증가를 최소화합니다.");
     $("pace-hint").innerHTML = txt;
+
+    var simple = $("bfSimple").checked;
+    $("bf-hint").innerHTML = simple
+      ? "프로틴 한 잔에 " + (m==="cut" ? "고구마" : "베이글") + "만. <b style='color:var(--champagne)'>불 쓸 일도, 씻을 것도 없습니다.</b> 빠진 지방은 점심·저녁으로 옮겨집니다."
+      : "프로틴 · 계란 · 오트밀로 제대로 차립니다. 계란만 미리 삶아두면 됩니다.";
   }
-  document.querySelectorAll('input[name=mode],input[name=pace]').forEach(function(el){
+  document.querySelectorAll('input[name=mode],input[name=pace],input[name=bf]').forEach(function(el){
     el.addEventListener("change", paceHint);
   });
   paceHint();
+  renderSaved();
 
   /* 트레이너 이름은 기억 */
   try{

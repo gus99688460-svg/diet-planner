@@ -396,7 +396,7 @@
 
   <footer>
     이 식단은 인바디 수치 기반 추정치입니다.<br>질환·복약 중인 회원은 전문의 상담 후 적용하세요.
-    <br><span style="opacity:.7">v2026.08.17b · 계란은 개수 · 나머지는 그램</span>
+    <br><span style="opacity:.7">v2026.08.17c · 카드에서 경고 문구 제외</span>
   </footer>
 </main>
 
@@ -1158,20 +1158,7 @@
 
     /* 2주 재점검은 트레이너가 보는 정보라 카드에는 넣지 않는다 */
 
-    /* 주의 문구 — 도달 지점과 가장 중요한 경고까지 두 개 */
-    s.notes.slice(0,2).forEach(function(nx){
-      var lines = wrap(x, nx.d.replace(/<[^>]+>/g,""), W-PAD*2-68, fnt(500,23));
-      var nh = 64 + lines.length*34;
-      x.fillStyle="rgba(217,138,60,.10)";
-      round(x,PAD,y,W-PAD*2,nh,18); x.fill();
-      x.strokeStyle="rgba(217,138,60,.34)"; x.lineWidth=2;
-      round(x,PAD,y,W-PAD*2,nh,18); x.stroke();
-      x.fillStyle="#D98A3C"; x.font=fnt(800,24);
-      x.fillText(nx.t, PAD+34, y+42);
-      x.fillStyle="#BDB8AC"; x.font=fnt(500,23);
-      lines.forEach(function(l,i){ x.fillText(l, PAD+34, y+80+i*34); });
-      y += nh + 16;
-    });
+    /* 주황색 주의 문구는 트레이너가 판단에 쓰는 정보라 화면에만 두고 카드에는 싣지 않는다 */
     y += 14;
 
     /* 푸터 */

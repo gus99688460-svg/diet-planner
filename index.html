@@ -396,7 +396,7 @@
 
   <footer>
     이 식단은 인바디 수치 기반 추정치입니다.<br>질환·복약 중인 회원은 전문의 상담 후 적용하세요.
-    <br><span style="opacity:.7">v2026.08.17 · 계란 정수 표기</span>
+    <br><span style="opacity:.7">v2026.08.17b · 계란은 개수 · 나머지는 그램</span>
   </footer>
 </main>
 
@@ -420,22 +420,24 @@
 
   /* ===== 식품 데이터 (100g 기준, 생/조리 전 중량) =====
      unit: 회원이 눈으로 셀 수 있는 단위. per = 1단위의 g수. cap = 한 끼 최대치
-     whole: 쪼개 먹지 않는 재료 — 그램은 감추고 정수 개수로만 적는다 */
+     whole: 쪼개 먹지 않는 재료 — 그램은 감추고 정수 개수로만 적는다
+     tool:  스쿱·큰술·알·캔처럼 계량 도구가 곧 단위인 것 — 개수 표기가 그램보다 쓰기 편하다
+     byWeight: 고구마·감자처럼 낱개 크기가 제각각인 것 — "1.5개"는 못 믿으니 그램으로만 적는다 */
   var F = {
     /* 탄수화물 */
-    bagel   : {n:"베이글",     note:"플레인 · 1개 약 90g",     kcal:270, p:10.0, c:53.0, f:1.5, unit:"개", per:90,  cap:180},
+    bagel   : {n:"베이글",     note:"플레인 · 1개 약 90g",     kcal:270, p:10.0, c:53.0, f:1.5, unit:"개", per:90,  cap:180, byWeight:true},
     rice    : {n:"쌀밥",       note:"지은 밥 기준",            kcal:145, p:2.5,  c:32.0, f:0.3, unit:"공기", per:210, cap:420},
     oat     : {n:"오트밀",     note:"건조 중량 · 물이나 우유에",kcal:380, p:13.0, c:67.0, f:7.0, cap:120},
-    sweet   : {n:"고구마",     note:"찐 것",                   kcal:128, p:1.3,  c:31.0, f:0.2, unit:"개", per:150, cap:300},
-    potato  : {n:"감자",       note:"찐 것",                   kcal:80,  p:2.0,  c:18.5, f:0.1, unit:"개", per:130, cap:260},
+    sweet   : {n:"고구마",     note:"찐 것",                   kcal:128, p:1.3,  c:31.0, f:0.2, unit:"개", per:150, cap:300, byWeight:true},
+    potato  : {n:"감자",       note:"찐 것",                   kcal:80,  p:2.0,  c:18.5, f:0.1, unit:"개", per:130, cap:260, byWeight:true},
 
-    banana  : {n:"바나나",     note:"",                        kcal:93,  p:1.1,  c:23.0, f:0.3, unit:"개", per:110, cap:250},
+    banana  : {n:"바나나",     note:"",                        kcal:93,  p:1.1,  c:23.0, f:0.3, unit:"개", per:110, cap:250, byWeight:true},
 
     /* 단백질 */
-    protein : {n:"프로틴",     note:"1스쿱 30g · 단백질 25g · 물에 타서", kcal:400, p:83.0, c:8.0, f:3.5, unit:"스쿱", per:30, cap:60},
+    protein : {n:"프로틴",     note:"1스쿱 30g · 단백질 25g · 물에 타서", kcal:400, p:83.0, c:8.0, f:3.5, unit:"스쿱", per:30, cap:60, tool:true},
     chicken : {n:"닭가슴살",   note:"생 중량 · 구이 또는 삶기", kcal:106, p:23.4, c:0,    f:1.2},
     yogurt2 : {n:"그릭요거트", note:"무가당 · 편의점 컵 그대로",kcal:60,  p:10.0, c:4.0,  f:0.5},
-    tuna    : {n:"참치캔",     note:"기름 뺀 것",              kcal:110, p:26.0, c:0,    f:1.0, unit:"캔", per:85},
+    tuna    : {n:"참치캔",     note:"기름 뺀 것",              kcal:110, p:26.0, c:0,    f:1.0, unit:"캔", per:85, tool:true},
     porkH   : {n:"돼지 앞다리살",note:"제육용 · 생 중량",      kcal:130, p:20.5, c:0,    f:4.5},
     porkT   : {n:"돼지 안심",  note:"생 중량",                 kcal:120, p:22.0, c:0,    f:3.0},
     beefR   : {n:"소 우둔살",  note:"생 중량 · 홍두깨살 대체 가능",kcal:130,p:21.0,c:0,  f:4.5},
@@ -447,8 +449,8 @@
 
     /* 지방 */
     egg     : {n:"계란",       note:"삶은 달걀 1개 기준 · 편의점 구운계란도 같습니다",kcal:144, p:12.4, c:0.8,  f:9.6,  unit:"개", per:50, whole:true},
-    oil     : {n:"올리브유",   note:"조리용",                  kcal:884, p:0,    c:0,    f:100.0,unit:"큰술", per:15},
-    almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2}
+    oil     : {n:"올리브유",   note:"조리용",                  kcal:884, p:0,    c:0,    f:100.0,unit:"큰술", per:15, tool:true},
+    almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2, tool:true}
   };
 
   /* 끼니 구성 템플릿
@@ -478,7 +480,7 @@
   var SWAP = [
     ["프로틴 1스쿱 = 단백질 25g",
      "닭가슴살 110g · 계란 4개 · 흰자 7개분 · 그릭요거트 250g과 같습니다. 고기가 부담되는 끼니는 프로틴으로 바꾸세요"],
-    ["탄수화물 30g 교환", "쌀밥 95g · 베이글 55g · 오트밀 45g · 고구마 100g · 감자 160g · 바나나 1.2개"],
+    ["탄수화물 30g 교환", "쌀밥 95g · 베이글 55g · 오트밀 45g · 고구마 100g · 감자 160g · 바나나 130g"],
     ["단백질 20g 교환",   "닭가슴살 85g · 계란 3개 · 참치캔 1캔 · 프로틴 0.8스쿱 · 돼지 앞다리살 100g · 돼지 안심 90g · 소 우둔살 95g · 틸라피아 100g"],
     ["지방 10g 교환",     "계란 1개 · 올리브유 0.7큰술 · 아몬드 17알 · 돼지 목살 70g · 소 부채살 70g"],
     ["지방까지 채워지는 고기", "부채살·목살을 쓰는 끼니는 기름을 따로 넣지 않습니다"],
@@ -497,7 +499,9 @@
   function brief(f,g){
     /* 계란처럼 쪼개 먹지 않는 재료는 반개·그램 없이 정수로만 */
     if(f.whole) return Math.max(1, Math.round(g/f.per)) + f.unit;
-    if(f.unit){
+    /* 바꿔 먹을 양을 일러주는 자리다 — 스쿱·큰술처럼 계량되는 단위만 남기고
+       나머지는 그램으로 적는다. 낱개 크기가 제각각인 고구마 "1.5개"는 못 쓴다 */
+    if(f.unit && f.tool){
       var n = f.per < 2 ? Math.round(g/f.per) : Math.round(g/f.per*2)/2;
       if(n >= 0.5 && Math.abs(g - n*f.per)/g <= 0.2) return (n===0.5 ? "1/2" : n) + f.unit;
     }
@@ -530,7 +534,8 @@
     var t = g + "g";
     /* 계란은 저울에 올릴 일이 없다 — 삶은 달걀 몇 개인지만 적는다 */
     if(f.whole) return Math.max(1, Math.round(g/f.per)) + f.unit;
-    if(!f.unit) return t;
+    /* 고구마·감자·베이글·바나나는 낱개 크기가 제각각이라 개수를 붙이면 오히려 틀린 정보가 된다 */
+    if(!f.unit || f.byWeight) return t;
     /* 알·조각처럼 쪼갤 수 없는 단위는 정수로, 나머지는 0.5 단위로 */
     if(g/f.per < 0.4) return t;              // 1/2보다 확실히 작으면 그램만
     var n = f.per < 2 ? Math.round(g/f.per) : Math.round(g/f.per*2)/2;

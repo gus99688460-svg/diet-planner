@@ -396,6 +396,7 @@
 
   <footer>
     이 식단은 인바디 수치 기반 추정치입니다.<br>질환·복약 중인 회원은 전문의 상담 후 적용하세요.
+    <br><span style="opacity:.7">v2026.08.17 · 계란 정수 표기</span>
   </footer>
 </main>
 
@@ -418,7 +419,8 @@
   var r5 = function(n){ return Math.round(n/5)*5; };
 
   /* ===== 식품 데이터 (100g 기준, 생/조리 전 중량) =====
-     unit: 회원이 눈으로 셀 수 있는 단위. per = 1단위의 g수. cap = 한 끼 최대치 */
+     unit: 회원이 눈으로 셀 수 있는 단위. per = 1단위의 g수. cap = 한 끼 최대치
+     whole: 쪼개 먹지 않는 재료 — 그램은 감추고 정수 개수로만 적는다 */
   var F = {
     /* 탄수화물 */
     bagel   : {n:"베이글",     note:"플레인 · 1개 약 90g",     kcal:270, p:10.0, c:53.0, f:1.5, unit:"개", per:90,  cap:180},
@@ -444,7 +446,7 @@
     porkB   : {n:"돼지 목살",  note:"생 중량 · 지방까지 채워짐", kcal:200, p:18.5, c:0,   f:14.0},
 
     /* 지방 */
-    egg     : {n:"계란",       note:"삶아두거나 편의점 구운계란",kcal:144, p:12.4, c:0.8,  f:9.6,  unit:"개", per:50},
+    egg     : {n:"계란",       note:"삶은 달걀 1개 기준 · 편의점 구운계란도 같습니다",kcal:144, p:12.4, c:0.8,  f:9.6,  unit:"개", per:50, whole:true},
     oil     : {n:"올리브유",   note:"조리용",                  kcal:884, p:0,    c:0,    f:100.0,unit:"큰술", per:15},
     almond  : {n:"아몬드",     note:"",                        kcal:580, p:21.0, c:20.0, f:50.0, unit:"알", per:1.2}
   };
@@ -493,6 +495,8 @@
 
   /* 눈대중으로 쓰는 짧은 표기 — 계란 6개, 참치캔 2캔, 닭가슴살 180g */
   function brief(f,g){
+    /* 계란처럼 쪼개 먹지 않는 재료는 반개·그램 없이 정수로만 */
+    if(f.whole) return Math.max(1, Math.round(g/f.per)) + f.unit;
     if(f.unit){
       var n = f.per < 2 ? Math.round(g/f.per) : Math.round(g/f.per*2)/2;
       if(n >= 0.5 && Math.abs(g - n*f.per)/g <= 0.2) return (n===0.5 ? "1/2" : n) + f.unit;
@@ -524,6 +528,8 @@
   function amount(f,g){
     if(!g) return "자유롭게";
     var t = g + "g";
+    /* 계란은 저울에 올릴 일이 없다 — 삶은 달걀 몇 개인지만 적는다 */
+    if(f.whole) return Math.max(1, Math.round(g/f.per)) + f.unit;
     if(!f.unit) return t;
     /* 알·조각처럼 쪼갤 수 없는 단위는 정수로, 나머지는 0.5 단위로 */
     if(g/f.per < 0.4) return t;              // 1/2보다 확실히 작으면 그램만
